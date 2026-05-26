@@ -1,12 +1,12 @@
-import React, { useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
   TouchableOpacity,
-  Text,
   Animated,
+  Platform,
 } from "react-native";
-import { Search, X, Mic } from "lucide-react-native";
+import { Search, X } from "lucide-react-native";
 
 type Props = {
   value: string;
@@ -27,17 +27,29 @@ export default function SearchBar({
   onBlur,
   autoFocus,
 }: Props) {
-  const inputRef = useRef<TextInput>(null);
-  const clearOpacity = useRef(new Animated.Value(0)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
+  const inputRef = React.useRef<TextInput>(null);
+  
+  // Using useState for Animations makes them immune to Fast Refresh caching bugs
+  const [clearOpacity] = useState(() => new Animated.Value(0));
+  const [glowAnim] = useState(() => new Animated.Value(0));
+
+  const borderColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(255,255,255,0.08)", "rgba(46,204,113,0.5)"],
+  });
+
+  const backgroundColor = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(255,255,255,0.04)", "rgba(255,255,255,0.08)"],
+  });
 
   useEffect(() => {
     Animated.timing(clearOpacity, {
       toValue: value.length > 0 ? 1 : 0,
       duration: 180,
-      useNativeDriver: true,
+      useNativeDriver: false, // Web prefers false for opacity sometimes, safe fallback
     }).start();
-  }, [value]);
+  }, [value, clearOpacity]);
 
   const handleFocus = () => {
     onFocus?.();
@@ -59,22 +71,20 @@ export default function SearchBar({
     }).start();
   };
 
-  const borderColor = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["rgba(255,255,255,0.08)", "rgba(46,204,113,0.5)"],
-  });
-
   return (
     <View className="px-5 pt-2 pb-3">
       <Animated.View
         className="flex-row items-center rounded-2xl px-4 h-[52px] gap-3"
         style={{
-          backgroundColor: "rgba(255,255,255,0.06)",
+          backgroundColor,
           borderWidth: 1.5,
           borderColor,
         }}
       >
-        <Search size={18} color="rgba(46,204,113,0.7)" />
+        <Search 
+          size={18} 
+          color={value.length > 0 ? "#2ECC71" : "rgba(255,255,255,0.4)"} 
+        />
 
         <TextInput
           ref={inputRef}
@@ -92,9 +102,9 @@ export default function SearchBar({
           className="flex-1 text-[15px] text-white py-0"
           clearButtonMode="never"
           selectionColor="#2ECC71"
+          style={Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}}
         />
 
-        {/* Clear button */}
         <Animated.View style={{ opacity: clearOpacity }}>
           <TouchableOpacity
             onPress={() => {
