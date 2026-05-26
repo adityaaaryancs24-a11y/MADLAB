@@ -14,6 +14,9 @@ interface AppContextType extends AppState {
   logout: () => void;
   addToSearchHistory: (query: string, resultsCount: number) => void;
   clearSearchHistory: () => void;
+  updateUserProfile: (profile: Partial<User>) => void;
+  deleteAccount: () => void;
+  clearWatchlist: () => void;
 }
 
 const defaultSettings: UserSettings = {
@@ -29,6 +32,17 @@ const defaultSettings: UserSettings = {
   hapticFeedback: true,
   priceAlerts: true,
   darkMode: false,
+  themeMode: "dark",
+  accentColor: "emerald",
+  priceAlertThreshold: 10,
+  alertSound: "chime",
+  weeklyDigest: false,
+  pushNotifications: true,
+  emailNotifications: true,
+  fontSize: "medium",
+  offlineMode: false,
+  ttsEnabled: false,
+  highContrast: false,
   notifications: {
     priceDrops: true,
     weeklyDigest: false,
@@ -191,6 +205,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSearchHistory([]);
   };
 
+  const updateUserProfile = (profile: Partial<User>) => {
+    setUser((prev) => prev ? { ...prev, ...profile } : null);
+  };
+
+  const deleteAccount = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    setScanHistory([]);
+    setWatchlist([]);
+    setSettings(defaultSettings);
+    AsyncStorage.clear();
+  };
+
+  const clearWatchlist = () => {
+    setWatchlist([]);
+  };
+
   const value: AppContextType = {
     user,
     scanHistory,
@@ -209,6 +240,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     logout,
     addToSearchHistory,
     clearSearchHistory,
+    updateUserProfile,
+    deleteAccount,
+    clearWatchlist,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
