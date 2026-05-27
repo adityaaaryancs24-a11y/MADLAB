@@ -61,6 +61,17 @@ export interface UserSettings {
   hapticFeedback: boolean;
   priceAlerts: boolean;
   darkMode: boolean;
+  themeMode: 'light' | 'dark' | 'system';
+  accentColor: 'emerald' | 'blue' | 'orange' | 'purple';
+  priceAlertThreshold: number;
+  alertSound: 'chime' | 'beep' | 'none';
+  weeklyDigest: boolean;
+  pushNotifications: boolean;
+  emailNotifications: boolean;
+  fontSize: 'small' | 'medium' | 'large';
+  offlineMode: boolean;
+  ttsEnabled: boolean;
+  highContrast: boolean;
   notifications: {
     priceDrops: boolean;
     weeklyDigest: boolean;
@@ -71,7 +82,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   avatar?: string;
+  membershipTier?: 'Free' | 'Pro';
 }
 
 export interface AppState {
