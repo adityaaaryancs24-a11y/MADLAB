@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, TextInput, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
 import { Zap, Keyboard, X, ShieldAlert } from "lucide-react-native";
 
 import { ScannerOverlay } from "../../components/scanner/ScannerOverlay";
 import { LoadingSteps } from "../../components/scanner/LoadingSteps";
-import { productService } from "../../services/productService";
+import { useBarcodeLookup } from "../../hooks/useBarcodeLookup";
 
 export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -17,92 +24,23 @@ export default function ScannerScreen() {
   const [manualBarcode, setManualBarcode] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
 
-  // Loading Steps State
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
-  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const { isLoading, loadingStep, loadingError, processBarcode, isCooldownRef } =
+    useBarcodeLookup();
 
-  const isCooldownRef = useRef(false);
+  const handleBarcodeScanned = async ({ data }: { type: string; data: string }) => {
+    if (isCooldownRef.current || !isScanning || isLoading) return;
 
-  // Handle successful barcode scan
-  const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
-    // Prevent multiple rapid scans (cooldown protection)
-    if (isCooldownRef.current || !isScanning) return;
-    
     isCooldownRef.current = true;
     setIsScanning(false);
 
-    // Trigger haptic feedback (Success)
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      console.warn("Haptics not supported");
+    } catch {
+      /* haptics optional */
     }
 
-    processBarcode(data);
-  };
-
-  const processBarcode = async (barcode: string) => {
-    const cleanedBarcode = barcode.trim();
-    
-    setIsLoading(true);
-    setLoadingStep(0); // Reading barcode
-    setLoadingError(null);
-
-    try {
-      // Step 1: Reading barcode (simulate brief delay for effect)
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      // Step 2: Fetching product data
-      setLoadingStep(1);
-      const product = await productService.getProductByUPC(cleanedBarcode);
-      
-      // Map API response to match UI expected schema
-      const mappedProduct = {
-        ...product,
-        id: `prod_${product.upc}`, // ensure an id exists
-        priceHistory: product.price_history // map snake_case to camelCase
-      };
-
-      // Step 3: Comparing retailer prices
-      setLoadingStep(2);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Success Step
-      setLoadingStep(3);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      await new Promise(resolve => setTimeout(resolve, 600)); // Show success checkmark briefly
-
-      // Reset states
-      setIsLoading(false);
-      
-      // Cooldown duration before allowing another scan
-      setTimeout(() => {
-        isCooldownRef.current = false;
-        setIsScanning(true);
-      }, 1000);
-
-      // Navigate to product screen
-      router.push({
-        pathname: `/product/${cleanedBarcode}` as any,
-        params: {
-          upc: cleanedBarcode,
-          productJson: JSON.stringify(mappedProduct),
-        },
-      });
-
-    } catch (error: any) {
-      // Handle error
-      setLoadingError(error.message || 'Product not found');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      
-      // Keep error visible for 3 seconds then dismiss and allow scanning again
-      setTimeout(() => {
-        setIsLoading(false);
-        isCooldownRef.current = false;
-        setIsScanning(true);
-      }, 3000);
-    }
+    await processBarcode(data);
+    setIsScanning(true);
   };
 
   const handleManualSubmit = () => {
@@ -110,14 +48,13 @@ export default function ScannerScreen() {
       setInputError("Please enter a barcode number");
       return;
     }
-    
+
     setManualInputVisible(false);
-    processBarcode(manualBarcode);
     setManualBarcode("");
     setInputError(null);
+    processBarcode(manualBarcode);
   };
 
-  // Permission Request States
   if (!permission) {
     return (
       <View className="flex-1 bg-[#0A0E15] items-center justify-center">
@@ -156,22 +93,17 @@ export default function ScannerScreen() {
         barcodeScannerSettings={{
           barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e"],
         }}
-        onBarcodeScanned={isScanning ? handleBarcodeScanned : undefined}
+        onBarcodeScanned={isScanning && !isLoading ? handleBarcodeScanned : undefined}
       />
 
-      <ScannerOverlay 
+      <ScannerOverlay
         torchEnabled={torchEnabled}
         onToggleTorch={() => setTorchEnabled(!torchEnabled)}
-        isScanning={isScanning}
+        isScanning={isScanning && !isLoading}
       />
 
-      <LoadingSteps 
-        isVisible={isLoading}
-        step={loadingStep}
-        error={loadingError}
-      />
+      <LoadingSteps isVisible={isLoading} step={loadingStep} error={loadingError} />
 
-      {/* Top Banner & Bottom Controls (Overlaying everything) */}
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none" className="justify-between">
         <View className="w-full justify-center px-6 pt-12" pointerEvents="none">
           <View className="flex-row items-center gap-2">
@@ -180,19 +112,17 @@ export default function ScannerScreen() {
           </View>
         </View>
 
-        {/* Footer controls */}
         <View className="w-full items-center justify-between px-6 pb-12 pt-8" pointerEvents="box-none">
           <View className="items-center px-4 mb-4" pointerEvents="none">
             <Text className="text-white text-center text-sm font-semibold mb-2">
               Supports UPC & EAN Grocery Barcodes
             </Text>
             <Text className="text-white/40 text-center text-xs leading-relaxed">
-              Provides real-time price matches, dynamic target alerts, and a 30-day price history chart.
+              Use Manual Barcode to test without a physical product label.
             </Text>
           </View>
 
           <View className="w-full flex-row gap-4">
-            {/* Manual Entry Button */}
             <TouchableOpacity
               onPress={() => setManualInputVisible(true)}
               className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-center gap-2"
@@ -204,7 +134,6 @@ export default function ScannerScreen() {
         </View>
       </View>
 
-      {/* Manual Input Dialog Overlay */}
       {manualInputVisible && (
         <View className="absolute inset-0 bg-black/85 items-center justify-center p-6 z-50">
           <View className="w-full bg-[#111827] border border-white/10 rounded-3xl p-6 relative">
@@ -238,39 +167,27 @@ export default function ScannerScreen() {
             />
 
             {inputError && (
-              <Text className="text-red-400 text-xs font-semibold mb-4 text-center">
-                {inputError}
-              </Text>
+              <Text className="text-red-400 text-xs font-semibold mb-4 text-center">{inputError}</Text>
             )}
 
-            <View className="flex-row gap-2 mt-2 mb-4 justify-center">
-              <TouchableOpacity
-                onPress={() => {
-                  setManualBarcode("034000000210");
-                  setInputError(null);
-                }}
-                className="px-3 py-1.5 bg-[#4ADE80]/10 border border-[#4ADE80]/20 rounded-full"
-              >
-                <Text className="text-[#4ADE80] text-xs font-medium">Avocados</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setManualBarcode("041220002105");
-                  setInputError(null);
-                }}
-                className="px-3 py-1.5 bg-[#4ADE80]/10 border border-[#4ADE80]/20 rounded-full"
-              >
-                <Text className="text-[#4ADE80] text-xs font-medium">Yogurt</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setManualBarcode("012993102123");
-                  setInputError(null);
-                }}
-                className="px-3 py-1.5 bg-[#4ADE80]/10 border border-[#4ADE80]/20 rounded-full"
-              >
-                <Text className="text-[#4ADE80] text-xs font-medium">La Croix</Text>
-              </TouchableOpacity>
+            <View className="flex-row gap-2 mt-2 mb-4 justify-center flex-wrap">
+              {[
+                { label: "Avocados", upc: "034000000210" },
+                { label: "Yogurt", upc: "041220002105" },
+                { label: "La Croix", upc: "012993102123" },
+                { label: "Pepsi", upc: "012000001765" },
+              ].map((sample) => (
+                <TouchableOpacity
+                  key={sample.upc}
+                  onPress={() => {
+                    setManualBarcode(sample.upc);
+                    setInputError(null);
+                  }}
+                  className="px-3 py-1.5 bg-[#4ADE80]/10 border border-[#4ADE80]/20 rounded-full"
+                >
+                  <Text className="text-[#4ADE80] text-xs font-medium">{sample.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             <TouchableOpacity

@@ -26,12 +26,12 @@ export default function Home() {
     setIsScanning(true);
   };
 
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarcodeScanned = ({ data }: { type: string; data: string }) => {
     if (!isScanning) return;
     setIsScanning(false);
-    // Proceed to search or product details with the scanned data
-    // router.push({ pathname: "/(tabs)/search", params: { query: data } });
-    console.log("Scanned data:", data);
+    // Full scan + API flow lives on the Scan tab — redirect there with the code
+    const upc = data.replace(/\D/g, "");
+    router.push(`/product/${upc}` as any);
   };
 
   const formatTimeAgo = (timestamp: number) => {
@@ -172,7 +172,7 @@ export default function Home() {
               {recentScans.map((scan) => (
                 <TouchableOpacity
                   key={scan.id}
-                  onPress={() => router.push(`/product/${scan.id}` as any)}
+                  onPress={() => router.push(`/product/${scan.upc || scan.productId}` as any)}
                   className="w-24 items-center gap-2 mr-3"
                 >
                   <View className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/10 relative">
