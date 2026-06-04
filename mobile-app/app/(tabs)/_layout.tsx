@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Search, List, Settings, Scan } from 'lucide-react-native';
+import { Home, Search, List, Settings, Scan, Heart } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -37,8 +37,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="watchlist"
         options={{
-          title: 'Watchlist',
-          tabBarIcon: ({ color }) => <List color={color} size={24} />,
+          title: 'Wishlist',
+          tabBarIcon: ({ color }) => <Heart color={color} size={24} />,
         }}
       />
       <Tabs.Screen

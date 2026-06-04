@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Share, ActivityIndicator, Linking, ScrollView, Image } from "react-native";
 import {
   View,
   Text,
@@ -21,6 +22,7 @@ import Animated, {
   FadeInDown,
   FadeIn,
 } from "react-native-reanimated";
+import { ArrowLeft, Share2, Bell, Heart, Info, Tag, XCircle, AlertTriangle, Sparkles, ChevronRight } from "lucide-react-native";
 
 import {
   ArrowLeft,
@@ -38,6 +40,9 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useApp } from "../../src/context/AppContext";
+import { productService, BackendProduct } from "../../services/productService";
+import { NativePriceChart } from "../../src/components/NativePriceChart";
+import { getProductsByCategory, getSimilarProducts, mockProducts } from "../../src/utils/mockData";
 import {
   productService,
   BackendProduct,
@@ -75,6 +80,25 @@ export default function ProductDetailScreen() {
     },
   });
 
+   // Animated Styles
+  const heroAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, HERO_HEIGHT], [-50, 0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0], [1.2, 1], Extrapolation.CLAMP),
+        },
+      ],
+    };
+  });
+
+  const headerOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [HERO_HEIGHT - 100, HERO_HEIGHT - 50], [0, 1], Extrapolation.CLAMP),
+    };
+  });
   useEffect(() => {
     if (productJson) {
       try {
@@ -233,6 +257,8 @@ export default function ProductDetailScreen() {
         id: `watch_${Date.now()}`,
         productId: product.upc,
         name: product.name,
+        brand: product.brand,
+        image: product.image,
         image: product.image_url,
         currentPrice: lowestPrice,
         previousPrice: averagePrice,
@@ -267,6 +293,7 @@ export default function ProductDetailScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
+        message: `Check out ${product.brand} ${product.name}! Best price of ₹${lowestPrice.toFixed(2)} found at ${(bestPriceObj as any)?.store || (bestPriceObj as any)?.retailer}.`,
         message: `Check out ${product.brand} ${
           product.name
         }! Best price of $${lowestPrice.toFixed(
@@ -277,6 +304,48 @@ export default function ProductDetailScreen() {
       console.error(e);
     }
   };
+
+ 
+
+  const renderHistoryChart = () => {
+    if (!product.price_history || product.price_history.length === 0) return null;
+    
+    // Map to the format expected by NativePriceChart
+    const chartData = product.price_history.map((h: any) => ({
+      date: new Date(h.date || h.recorded_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      price: h.price
+    }));
+
+    const histPrices = chartData.map(d => d.price);
+    const histLow  = Math.min(...histPrices);
+    const histHigh = Math.max(...histPrices);
+    const currPx   = chartData[chartData.length - 1]?.price ?? 0;
+
+    return (
+      <>
+        <NativePriceChart data={chartData} />
+        {/* Historical Low / High row */}
+        <View className="flex-row gap-3 mb-6">
+          {[
+            { label: 'Hist. Low',  value: `₹${histLow.toFixed(0)}`,  color: '#2ECC71' },
+            { label: 'Current',    value: `₹${currPx.toFixed(0)}`,   color: '#3B82F6' },
+            { label: 'Hist. High', value: `₹${histHigh.toFixed(0)}`, color: '#EF4444' },
+          ].map(({ label, value, color }) => (
+            <View key={label} className="flex-1 p-3 bg-white/5 border border-white/10 rounded-2xl items-center">
+              <Text className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: `${color}99` }}>{label}</Text>
+              <Text className="text-white font-bold">{value}</Text>
+            </View>
+          ))}
+        </View>
+      </>
+    );
+  };
+
+  const similarProducts =
+    getSimilarProducts(String(product.id), 8).length > 0
+      ? getSimilarProducts(String(product.id), 8)
+      : getProductsByCategory(product.category, 8);
+  const prediction = product.pricePrediction;
 
   return (
     <View className="flex-1 bg-[#0A0E15]">
@@ -348,6 +417,15 @@ export default function ProductDetailScreen() {
               </Text>
             </View>
           </View>
+
+          {(product.warning || product.dataSource === "mock") && (
+            <Animated.View entering={FadeInDown.delay(80).springify()} className="flex-row gap-3 bg-[#F4A261]/10 border border-[#F4A261]/20 rounded-2xl p-4 mb-5">
+              <AlertTriangle size={18} color="#F4A261" />
+              <Text className="text-[#F4A261] text-xs font-semibold leading-5 flex-1">
+                {product.warning || "Live APIs did not return this barcode. Verity is showing realistic mock data so you can continue comparing prices."}
+              </Text>
+            </Animated.View>
+          )}
 
           <Animated.Text className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">
             {product.brand}
@@ -431,6 +509,15 @@ export default function ProductDetailScreen() {
                         Best Price Found
                       </Text>
                     </View>
+                    <Text className="text-white text-3xl font-black">₹{lowestPrice.toFixed(2)}</Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className="text-white/40 text-xs font-semibold mb-1">at {(bestPriceObj as any).store || (bestPriceObj as any).retailer}</Text>
+                    {maxSavings > 0 && (
+                      <View className="bg-[#4ADE80]/20 px-2 py-1 rounded-md">
+                        <Text className="text-[#4ADE80] font-bold text-xs">Save {savingsPercent.toFixed(0)}%</Text>
+                      </View>
+                    )}
 
                     <Text className="text-white text-3xl font-black">
                       ${lowestPrice.toFixed(2)}
@@ -441,6 +528,37 @@ export default function ProductDetailScreen() {
             </Animated.View>
           )}
 
+          {/* Retailer Comparison */}
+          {sortedPrices.length > 1 && (
+            <Animated.View entering={FadeInDown.delay(300).springify()} className="mb-8">
+              <Text className="text-white/60 font-bold text-xs uppercase tracking-wider mb-4 px-1">
+                Other Retailers
+              </Text>
+              <View className="space-y-3">
+                {sortedPrices.slice(1).map((priceOption, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    onPress={() => priceOption.url && Linking.openURL(priceOption.url)}
+                    className="w-full flex-row items-center justify-between p-4 bg-[#111827] border border-white/5 rounded-2xl"
+                  >
+                    <View className="flex-row items-center gap-3">
+                      <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
+                        <Text className="text-lg">{priceOption.logo || "🏪"}</Text>
+                      </View>
+                      <View>
+                        <Text className="text-white font-bold text-sm">{(priceOption as any).store || (priceOption as any).retailer}</Text>
+                        <Text className={`text-xs mt-0.5 font-medium ${
+                          (priceOption as any).stock === 'Out of Stock' || (priceOption as any).in_stock === false ? 'text-red-400' : 'text-white/40'
+                        }`}>
+                          {(priceOption as any).stock || (priceOption as any).in_stock || 'In Stock'}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="font-bold text-base text-white">
+                      ₹{priceOption.price.toFixed(2)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
           {/* 30-Day Trend Chart */}
           {product.price_history &&
             product.price_history.length > 0 && (
@@ -520,6 +638,62 @@ export default function ProductDetailScreen() {
               </View>
             )}
 
+          {/* 30-Day Trend Chart */}
+          {renderHistoryChart()}
+
+          {prediction && (
+            <Animated.View entering={FadeInDown.delay(325).springify()} className="bg-[#111827] border border-white/5 rounded-3xl p-5 mb-8">
+              <View className="flex-row items-center gap-2 mb-4">
+                <Sparkles size={16} color="#F4A261" />
+                <Text className="text-white font-bold text-sm">Price Prediction</Text>
+              </View>
+              <View className="flex-row justify-between mb-3">
+                <View>
+                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Next {prediction.daysAhead} days</Text>
+                  <Text className="text-white text-xl font-black mt-1">₹{prediction.predictedPrice.toFixed(2)}</Text>
+                </View>
+                <View className="items-end">
+                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Signal</Text>
+                  <Text className="text-[#F4A261] font-black mt-1">{prediction.recommendation}</Text>
+                </View>
+              </View>
+              <Text className="text-white/50 text-xs leading-5">
+                {prediction.trend} with {prediction.confidence}% confidence.
+              </Text>
+            </Animated.View>
+          )}
+
+          {similarProducts.length > 0 && (
+            <Animated.View entering={FadeInDown.delay(340).springify()} className="mb-8">
+              <Text className="text-white/60 font-bold text-xs uppercase tracking-wider mb-4 px-1">
+                Similar Products
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {similarProducts.map((item) => {
+                  const image = item.image || mockProducts[item.id]?.image;
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => router.push(`/product/${item.upc}` as any)}
+                      className="w-40 mr-3 bg-[#111827] border border-white/5 rounded-2xl overflow-hidden"
+                    >
+                      <Image source={{ uri: image }} className="w-full h-24" resizeMode="cover" />
+                      <View className="p-3">
+                        <Text className="text-white/40 text-[10px] font-bold uppercase" numberOfLines={1}>{item.brand}</Text>
+                        <Text className="text-white text-xs font-bold mt-1 leading-4" numberOfLines={2}>{item.name}</Text>
+                        <View className="flex-row items-center mt-2">
+                          <Text className="text-[#2ECC71] text-[11px] font-bold">View</Text>
+                          <ChevronRight size={12} color="#2ECC71" />
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+          )}
+
+          {/* Description */}
           {product.description && (
             <Animated.View className="bg-[#111827] border border-white/5 rounded-3xl p-6 mb-8">
               <View className="flex-row items-center gap-2 mb-3">

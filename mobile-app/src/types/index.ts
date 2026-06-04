@@ -9,6 +9,14 @@ export interface Product {
   image: string;
   category?: string;
   description?: string;
+  rating?: number;
+  reviewsCount?: number;
+  stockStatus?: string;
+  shippingEstimate?: string;
+  prices?: PriceInfo[];
+  priceHistory?: PriceHistoryPoint[];
+  dataSource?: "openfoodfacts" | "upcitemdb" | "mock" | "cache";
+  warning?: string;
 }
 
 export interface PriceInfo {
@@ -37,6 +45,7 @@ export interface WatchlistItem {
   id: string;
   productId: string;
   name: string;
+  brand: string;
   image: string;
   currentPrice: number;
   previousPrice: number;
@@ -44,6 +53,7 @@ export interface WatchlistItem {
   targetPrice?: number;
   priceHistory: PriceHistoryPoint[];
   addedAt: number;
+  url?: string;
 }
 
 export interface PriceHistoryPoint {
@@ -108,7 +118,12 @@ export interface PricePrediction {
   currentPrice: number;
   predictedPrice: number;
   confidence: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: 'Likely to Increase' | 'Likely to Decrease' | 'Stable';
   daysAhead: number;
   factors: string[];
+  dealScore?: number;
+  recommendation?: 'Buy Now' | 'Wait';
 }
+
+export type WishlistFilter = 'all' | 'price_dropped' | 'lowest_ever' | 'high_savings' | 'recently_added';
+export type WishlistSort = 'newest' | 'oldest' | 'highest_discount' | 'lowest_price' | 'highest_savings';

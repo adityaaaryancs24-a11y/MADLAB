@@ -7,8 +7,9 @@ import {
   Animated,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronRight, TrendingDown, TrendingUp, Minus } from "lucide-react-native";
-import { getMockPrices, type Product } from "@/src/utils/mockData";
+import { ChevronRight, TrendingDown } from "lucide-react-native";
+import { getMockPrices } from "@/src/utils/mockData";
+import type { Product } from "@/src/types";
 
 type Props = {
   product: Product;
@@ -54,8 +55,8 @@ export default function ProductCard({ product, index = 0, onPress }: Props) {
   const handlePress = () => {
     onPress?.();
     router.push({
-      pathname: "/product/[id]",
-      params: { id: product.id },
+      pathname: "/product/[upc]",
+      params: { upc: product.upc },
     });
   };
 

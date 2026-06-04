@@ -31,6 +31,7 @@ export default function SearchScreen() {
   const {
     query,
     results,
+    suggestions,
     recentSearches,
     isSearching,
     activeCategory,
@@ -145,6 +146,31 @@ export default function SearchScreen() {
           active={activeCategory}
           onChange={handleCategoryChange}
         />
+      )}
+
+      {query.trim().length > 0 && suggestions.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          className="z-10 px-5 pb-2"
+        >
+          {suggestions.map((suggestion) => (
+            <TouchableWithoutFeedback
+              key={suggestion}
+              onPress={() => {
+                handleRecentTap(suggestion);
+                Keyboard.dismiss();
+              }}
+            >
+              <View className="mr-2 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08]">
+                <Text className="text-[11px] text-white/60 font-semibold" numberOfLines={1}>
+                  {suggestion}
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+          ))}
+        </ScrollView>
       )}
 
       {/* Body */}

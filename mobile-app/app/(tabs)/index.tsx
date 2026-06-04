@@ -14,9 +14,12 @@ import { Zap, Keyboard, X, ShieldAlert } from "lucide-react-native";
 
 import { ScannerOverlay } from "../../components/scanner/ScannerOverlay";
 import { LoadingSteps } from "../../components/scanner/LoadingSteps";
+import { productService } from "../../services/productService";
+import { useApp } from "../../src/context/AppContext";
 import { useBarcodeLookup } from "../../hooks/useBarcodeLookup";
 
 export default function ScannerScreen() {
+  const { addToHistory } = useApp();
   const [permission, requestPermission] = useCameraPermissions();
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [isScanning, setIsScanning] = useState(true);
@@ -35,6 +38,78 @@ export default function ScannerScreen() {
 
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      console.warn("Haptics not supported");
+    }
+
+    processBarcode(data);
+  };
+
+  const processBarcode = async (barcode: string) => {
+    const cleanedBarcode = barcode.trim();
+    
+    setIsLoading(true);
+    setLoadingStep(0); // Reading barcode
+    setLoadingError(null);
+
+    try {
+      // Step 1: Reading barcode (simulate brief delay for effect)
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      // Step 2: Fetching product data
+      setLoadingStep(1);
+      const product = await productService.getProductByUPC(cleanedBarcode);
+
+      // Step 3: Comparing retailer prices
+      setLoadingStep(2);
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Success Step
+      setLoadingStep(3);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await new Promise(resolve => setTimeout(resolve, 600)); // Show success checkmark briefly
+
+      // Reset states
+      setIsLoading(false);
+      const bestPrice = productService.getBestPrice(product);
+      addToHistory({
+        id: `scan_${Date.now()}`,
+        productId: product.upc,
+        name: product.name,
+        image: product.image,
+        bestPrice: bestPrice ? `₹${bestPrice.price.toFixed(0)}` : "N/A",
+        store: bestPrice?.store ?? bestPrice?.retailer ?? "Verity",
+        timestamp: Date.now(),
+        upc: product.upc,
+      });
+      
+      // Cooldown duration before allowing another scan
+      setTimeout(() => {
+        isCooldownRef.current = false;
+        setIsScanning(true);
+      }, 1000);
+
+      // Navigate to product screen
+      router.push({
+        pathname: `/product/${cleanedBarcode}` as any,
+        params: {
+          upc: cleanedBarcode,
+          productJson: JSON.stringify(product),
+        },
+      });
+
+    } catch (error: any) {
+      // Handle error
+      setLoadingError(error.message || 'Product not found');
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
+      // Keep error visible for 3 seconds then dismiss and allow scanning again
+      setTimeout(() => {
+        setIsLoading(false);
+        isCooldownRef.current = false;
+        setIsScanning(true);
+      }, 3000);
+    }
     } catch {
       /* haptics optional */
     }
@@ -44,12 +119,20 @@ export default function ScannerScreen() {
   };
 
   const handleManualSubmit = () => {
-    if (!manualBarcode.trim()) {
+    const cleaned = manualBarcode.replace(/\D/g, "");
+    if (!cleaned) {
       setInputError("Please enter a barcode number");
       return;
     }
 
+    if (cleaned.length < 8 || cleaned.length > 14) {
+      setInputError("Enter an 8 to 14 digit UPC or EAN code");
+      return;
+    }
+    
+
     setManualInputVisible(false);
+    processBarcode(cleaned);
     setManualBarcode("");
     setInputError(null);
     processBarcode(manualBarcode);
