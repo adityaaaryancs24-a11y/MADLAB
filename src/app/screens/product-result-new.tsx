@@ -191,6 +191,20 @@ export function ProductResult() {
             <PriceHistoryChart data={priceHistory} />
           </div>
 
+          {/* Historical Low / High Banner */}
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {[
+              { label: "Historical Low",  value: `₹${Math.min(...priceHistory.map(p => p.price)).toFixed(0)}`, color: "#2ECC71" },
+              { label: "Current Price",   value: `₹${priceHistory[priceHistory.length - 1]?.price.toFixed(0) ?? "—"}`, color: "#3B82F6" },
+              { label: "Historical High", value: `₹${Math.max(...priceHistory.map(p => p.price)).toFixed(0)}`, color: "#EF4444" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="p-3 bg-white/5 border border-white/10 rounded-2xl text-center">
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: `${color}99` }}>{label}</p>
+                <p className="font-bold text-lg text-white">{value}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Price Comparison */}
           <div className="mt-8">
             <div className="flex items-center justify-between mb-5">
