@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DemoProduct, findDemoProductByUPC } from "../data/demoProducts";
 import { findProductByUPC, Product as LocalProduct } from "../data/products";
 import {
   generatePriceHistory,
@@ -182,6 +183,49 @@ function localProductToBackendProduct(product: LocalProduct): BackendProduct {
   };
 }
 
+function demoProductToBackendProduct(product: DemoProduct): BackendProduct {
+  const prices = product.prices
+    .map((price, index) => ({
+      id: index + 1,
+      retailer: price.store,
+      store: price.store,
+      price: price.price,
+      in_stock: true,
+      stock: "In Stock",
+      url: price.url,
+      updated_at: new Date().toISOString(),
+    }))
+    .sort((a, b) => a.price - b.price);
+
+  const priceHistory = product.price_history.map((point, index) => ({
+    id: index + 1,
+    price: point.price,
+    store: prices[0]?.store ?? "Best retailer",
+    date: point.date,
+    recorded_at: new Date(point.date).toISOString(),
+  }));
+
+  return {
+    id: product.upc,
+    upc: product.upc,
+    name: product.name,
+    brand: product.brand,
+    model: product.name,
+    image: product.image || PLACEHOLDER_IMAGE,
+    image_url: product.image || PLACEHOLDER_IMAGE,
+    description: product.description,
+    category: product.category,
+    rating: 4.6,
+    reviewsCount: 156,
+    stockStatus: "In Stock",
+    shippingEstimate: "Available today",
+    prices,
+    price_history: priceHistory,
+    dataSource: "local",
+    pricePrediction: product.pricePrediction,
+  };
+}
+
 function productToBackendProduct(
   product: Product,
   source: ProductDataSource,
@@ -309,8 +353,19 @@ async function lookupUPCItemDB(upc: string): Promise<BackendProduct | null> {
 }
 
 function lookupLocalDatabaseExact(upc: string): BackendProduct | null {
+  const demoProduct = findDemoProductByUPC(upc);
+  if (demoProduct) {
+    console.log("[LOCAL DB MATCH]", demoProduct.upc);
+    return demoProductToBackendProduct(demoProduct);
+  }
+
   const localProduct = findProductByUPC(upc);
-  return localProduct ? localProductToBackendProduct(localProduct) : null;
+  if (localProduct) {
+    console.log("[LOCAL DB MATCH]", localProduct.upc);
+    return localProductToBackendProduct(localProduct);
+  }
+
+  return null;
 }
 
 function lookupLocalExact(upc: string): BackendProduct | null {
@@ -328,13 +383,6 @@ export const productService = {
       throw new Error("Please enter a valid UPC or EAN barcode.");
     }
 
-    const freshCached = await readCache(upc);
-    if (freshCached) {
-      console.log("[ProductService] Cache hit:", freshCached);
-      return freshCached;
-    }
-    console.log("[ProductService] Cache miss:", upc);
-
     const exactLocal = lookupLocalDatabaseExact(upc);
     if (exactLocal) {
       console.log("[ProductService] Local UPC database hit:", exactLocal);
@@ -342,6 +390,13 @@ export const productService = {
       return exactLocal;
     }
     console.log("[ProductService] Local UPC database miss:", upc);
+
+    const freshCached = await readCache(upc);
+    if (freshCached) {
+      console.log("[ProductService] Cache hit:", freshCached);
+      return freshCached;
+    }
+    console.log("[ProductService] Cache miss:", upc);
 
     try {
       console.log("[ProductService] Querying OpenFoodFacts:", upc);
