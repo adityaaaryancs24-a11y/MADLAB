@@ -5,14 +5,14 @@ import { CheckCircle2, XCircle } from 'lucide-react-native';
 
 interface LoadingStepsProps {
   isVisible: boolean;
-  step: number; // 0: Reading barcode, 1: Fetching data, 2: Comparing prices, 3: Success, -1: Error
+  step: number; // 0: Scanning, 1: Looking up product, 2: Loading product, 3: Success
   error?: string | null;
 }
 
 const STEPS = [
-  'Reading barcode...',
-  'Fetching product data...',
-  'Comparing retailer prices...',
+  'Scanning...',
+  'Looking up product...',
+  'Loading product...',
 ];
 
 export function LoadingSteps({ isVisible, step, error }: LoadingStepsProps) {

@@ -253,7 +253,7 @@ function ResultsHeader({ count, query }: { count: number; query: string }) {
     <View className="px-5 py-2.5 mb-1">
       <Text className="text-[12px] text-white/30">
         {count} result{count !== 1 ? "s" : ""} for{" "}
-        <Text className="text-white/60 font-semibold">"{query}"</Text>
+        <Text className="text-white/60 font-semibold">{`"${query}"`}</Text>
       </Text>
     </View>
   );
@@ -295,7 +295,7 @@ function EmptyResults({ query }: { query: string }) {
         <SearchIcon size={32} color="rgba(244,162,97,0.4)" />
       </View>
       <Text className="text-[18px] font-bold text-white text-center">
-        No results for "{query}"
+        {`No results for "${query}"`}
       </Text>
       <Text className="text-[13px] text-white/40 text-center leading-5">
         Try a different spelling, a shorter term,{"\n"}or scan the barcode directly on the Home tab.

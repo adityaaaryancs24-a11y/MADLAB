@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { findProductByUPC, Product as LocalProduct } from "../data/products";
 import {
   generatePriceHistory,
   getMockPrices,
@@ -28,7 +29,7 @@ export interface PriceHistoryPoint {
   date?: string;
 }
 
-export type ProductDataSource = "openfoodfacts" | "upcitemdb" | "mock" | "cache";
+export type ProductDataSource = "openfoodfacts" | "upcitemdb" | "mock" | "cache" | "local";
 
 export interface BackendProduct {
   id: string | number;
@@ -136,6 +137,49 @@ function normalizeHistory(productId: string): PriceHistoryPoint[] {
     date: point.date,
     recorded_at: new Date(Date.now() - (30 - index) * 24 * 60 * 60 * 1000).toISOString(),
   }));
+}
+
+function localProductToBackendProduct(product: LocalProduct): BackendProduct {
+  const prices = product.prices
+    .map((price, index) => ({
+      id: index + 1,
+      retailer: price.store,
+      store: price.store,
+      price: price.price,
+      in_stock: true,
+      stock: "In Stock",
+      url: price.url,
+      updated_at: new Date().toISOString(),
+    }))
+    .sort((a, b) => a.price - b.price);
+
+  const priceHistory = product.priceHistory.map((point, index) => ({
+    id: index + 1,
+    price: point.price,
+    store: prices[0]?.store ?? "Best retailer",
+    date: point.date,
+    recorded_at: new Date(point.date).toISOString(),
+  }));
+
+  return {
+    id: product.upc,
+    upc: product.upc,
+    name: product.name,
+    brand: product.brand,
+    model: product.name,
+    image: product.image || PLACEHOLDER_IMAGE,
+    image_url: product.image || PLACEHOLDER_IMAGE,
+    description: product.description,
+    category: product.category,
+    rating: 4.5,
+    reviewsCount: 128,
+    stockStatus: "In Stock",
+    shippingEstimate: "Available today",
+    prices,
+    price_history: priceHistory,
+    dataSource: "local",
+    pricePrediction: predictPrice(product.upc),
+  };
 }
 
 function productToBackendProduct(
@@ -264,6 +308,11 @@ async function lookupUPCItemDB(upc: string): Promise<BackendProduct | null> {
   return productToBackendProduct(product, "upcitemdb");
 }
 
+function lookupLocalDatabaseExact(upc: string): BackendProduct | null {
+  const localProduct = findProductByUPC(upc);
+  return localProduct ? localProductToBackendProduct(localProduct) : null;
+}
+
 function lookupLocalExact(upc: string): BackendProduct | null {
   const exact = Object.values(mockProducts).find((product) => product.upc === upc);
   return exact ? productToBackendProduct(exact, "mock") : null;
@@ -271,30 +320,51 @@ function lookupLocalExact(upc: string): BackendProduct | null {
 
 export const productService = {
   async getProductByUPC(rawUpc: string): Promise<BackendProduct> {
+    console.log("[ProductService] Raw UPC:", rawUpc);
     const upc = cleanBarcode(rawUpc);
+    console.log("[ProductService] Normalized UPC:", upc);
     if (!upc) {
+      console.log("[ProductService] Invalid UPC after normalization");
       throw new Error("Please enter a valid UPC or EAN barcode.");
     }
 
     const freshCached = await readCache(upc);
-    if (freshCached) return freshCached;
+    if (freshCached) {
+      console.log("[ProductService] Cache hit:", freshCached);
+      return freshCached;
+    }
+    console.log("[ProductService] Cache miss:", upc);
+
+    const exactLocal = lookupLocalDatabaseExact(upc);
+    if (exactLocal) {
+      console.log("[ProductService] Local UPC database hit:", exactLocal);
+      await writeCache(upc, exactLocal);
+      return exactLocal;
+    }
+    console.log("[ProductService] Local UPC database miss:", upc);
 
     try {
+      console.log("[ProductService] Querying OpenFoodFacts:", upc);
       const offProduct = await lookupOpenFoodFacts(upc);
       if (offProduct) {
+        console.log("[ProductService] OpenFoodFacts hit:", offProduct);
         await writeCache(upc, offProduct);
         return offProduct;
       }
+      console.log("[ProductService] OpenFoodFacts returned null:", upc);
     } catch (error) {
       console.warn("[ProductService] OpenFoodFacts lookup failed", error);
     }
 
     try {
+      console.log("[ProductService] Querying UPCItemDB:", upc);
       const upcProduct = await lookupUPCItemDB(upc);
       if (upcProduct) {
+        console.log("[ProductService] UPCItemDB hit:", upcProduct);
         await writeCache(upc, upcProduct);
         return upcProduct;
       }
+      console.log("[ProductService] UPCItemDB returned null:", upc);
     } catch (error) {
       console.warn("[ProductService] UPCItemDB lookup failed", error);
     }
@@ -305,12 +375,15 @@ export const productService = {
         ...exactMock,
         warning: "Live product APIs were unavailable, so Verity is showing local mock catalog data.",
       };
+      console.log("[ProductService] Existing mock catalog hit:", warnedMock);
       await writeCache(upc, warnedMock);
       return warnedMock;
     }
+    console.log("[ProductService] Existing mock catalog miss:", upc);
 
     const offlineCached = await readCache(upc, true);
     if (offlineCached) {
+      console.log("[ProductService] Expired cache hit:", offlineCached);
       return {
         ...offlineCached,
         warning: "You appear to be offline. Showing the last cached result for this barcode.",
@@ -318,6 +391,7 @@ export const productService = {
     }
 
     const mockProduct = fallbackMockProduct(upc);
+    console.log("[ProductService] Fallback mock generated:", mockProduct);
     await writeCache(upc, mockProduct);
     return mockProduct;
   },

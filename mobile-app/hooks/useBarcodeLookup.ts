@@ -1,28 +1,40 @@
 import { useCallback, useRef, useState } from "react";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { productService } from "../services/productService";
+import { BackendProduct, productService } from "../services/productService";
 
 /** Strip non-digits so manual entry and camera scans match DB UPCs. */
-export function normalizeBarcode(raw: string): string {
-  return raw.replace(/\D/g, "").trim();
+export function normalizeBarcode(raw: unknown): string {
+  return String(raw ?? "").replace(/\D/g, "").trim();
 }
 
-export function useBarcodeLookup() {
+interface UseBarcodeLookupOptions {
+  onProductFound?: (product: BackendProduct) => void;
+}
+
+export function useBarcodeLookup(options: UseBarcodeLookupOptions = {}) {
+  const { onProductFound } = options;
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const isCooldownRef = useRef(false);
 
-  const processBarcode = useCallback(async (rawBarcode: string) => {
+  const processBarcode = useCallback(async (rawBarcode: unknown): Promise<boolean> => {
+    console.log("RAW BARCODE:", rawBarcode);
     const cleanedBarcode = normalizeBarcode(rawBarcode);
+    console.log("NORMALIZED:", cleanedBarcode);
 
     if (!cleanedBarcode) {
+      setIsLoading(true);
       setLoadingError("Please enter a valid barcode.");
-      return;
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingError(null);
+      }, 3000);
+      return false;
     }
 
-    if (isCooldownRef.current) return;
+    if (isCooldownRef.current) return false;
 
     isCooldownRef.current = true;
     setIsLoading(true);
@@ -33,7 +45,10 @@ export function useBarcodeLookup() {
       await new Promise((resolve) => setTimeout(resolve, 400));
 
       setLoadingStep(1);
+      console.log("LOOKING UP PRODUCT:", cleanedBarcode);
       const product = await productService.getProductByUPC(cleanedBarcode);
+      console.log("PRODUCT RESULT:", product);
+      onProductFound?.(product);
 
       setLoadingStep(2);
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -44,8 +59,9 @@ export function useBarcodeLookup() {
 
       setIsLoading(false);
 
+      console.log("NAVIGATING TO:", cleanedBarcode);
       router.push({
-        pathname: `/product/${cleanedBarcode}`,
+        pathname: `/product/${cleanedBarcode}` as any,
         params: {
           upc: cleanedBarcode,
           productJson: JSON.stringify(product),
@@ -62,13 +78,15 @@ export function useBarcodeLookup() {
         setLoadingError(null);
         isCooldownRef.current = false;
       }, 3000);
-      return;
+      return false;
     }
 
     setTimeout(() => {
       isCooldownRef.current = false;
-    }, 1000);
-  }, []);
+    }, 2000);
+
+    return true;
+  }, [onProductFound]);
 
   const resetCooldown = useCallback(() => {
     isCooldownRef.current = false;

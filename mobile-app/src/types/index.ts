@@ -15,7 +15,7 @@ export interface Product {
   shippingEstimate?: string;
   prices?: PriceInfo[];
   priceHistory?: PriceHistoryPoint[];
-  dataSource?: "openfoodfacts" | "upcitemdb" | "mock" | "cache";
+  dataSource?: "openfoodfacts" | "upcitemdb" | "mock" | "cache" | "local";
   warning?: string;
 }
 

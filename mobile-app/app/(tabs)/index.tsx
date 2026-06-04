@@ -1,77 +1,45 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  TextInput,
   ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
-import { Zap, Keyboard, X, ShieldAlert } from "lucide-react-native";
+import { Keyboard, ShieldAlert, X, Zap } from "lucide-react-native";
 
 import { ScannerOverlay } from "../../components/scanner/ScannerOverlay";
 import { LoadingSteps } from "../../components/scanner/LoadingSteps";
-import { productService } from "../../services/productService";
+import { BackendProduct } from "../../services/productService";
 import { useApp } from "../../src/context/AppContext";
 import { useBarcodeLookup } from "../../hooks/useBarcodeLookup";
+
+const SAMPLE_BARCODES = [
+  { label: "Avocados", upc: "034000000210" },
+  { label: "Yogurt", upc: "041220002105" },
+  { label: "La Croix", upc: "012993102123" },
+  { label: "Pepsi", upc: "012000001765" },
+];
+
+const SCAN_LOCK_MS = 2000;
 
 export default function ScannerScreen() {
   const { addToHistory } = useApp();
   const [permission, requestPermission] = useCameraPermissions();
   const [torchEnabled, setTorchEnabled] = useState(false);
-  const [isScanning, setIsScanning] = useState(true);
+  const [scanLocked, setScanLocked] = useState(false);
   const [manualInputVisible, setManualInputVisible] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
 
-  const { isLoading, loadingStep, loadingError, processBarcode, isCooldownRef } =
-    useBarcodeLookup();
+  const handleProductFound = useCallback(
+    (product: BackendProduct) => {
+      const bestPrice = product.prices?.[0];
 
-  const handleBarcodeScanned = async ({ data }: { type: string; data: string }) => {
-    if (isCooldownRef.current || !isScanning || isLoading) return;
-
-    isCooldownRef.current = true;
-    setIsScanning(false);
-
-    try {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      console.warn("Haptics not supported");
-    }
-
-    processBarcode(data);
-  };
-
-  const processBarcode = async (barcode: string) => {
-    const cleanedBarcode = barcode.trim();
-    
-    setIsLoading(true);
-    setLoadingStep(0); // Reading barcode
-    setLoadingError(null);
-
-    try {
-      // Step 1: Reading barcode (simulate brief delay for effect)
-      await new Promise(resolve => setTimeout(resolve, 600));
-      
-      // Step 2: Fetching product data
-      setLoadingStep(1);
-      const product = await productService.getProductByUPC(cleanedBarcode);
-
-      // Step 3: Comparing retailer prices
-      setLoadingStep(2);
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Success Step
-      setLoadingStep(3);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      await new Promise(resolve => setTimeout(resolve, 600)); // Show success checkmark briefly
-
-      // Reset states
-      setIsLoading(false);
-      const bestPrice = productService.getBestPrice(product);
       addToHistory({
         id: `scan_${Date.now()}`,
         productId: product.upc,
@@ -82,44 +50,47 @@ export default function ScannerScreen() {
         timestamp: Date.now(),
         upc: product.upc,
       });
-      
-      // Cooldown duration before allowing another scan
-      setTimeout(() => {
-        isCooldownRef.current = false;
-        setIsScanning(true);
-      }, 1000);
+    },
+    [addToHistory]
+  );
 
-      // Navigate to product screen
-      router.push({
-        pathname: `/product/${cleanedBarcode}` as any,
-        params: {
-          upc: cleanedBarcode,
-          productJson: JSON.stringify(product),
-        },
-      });
+  const { isLoading, loadingStep, loadingError, processBarcode } =
+    useBarcodeLookup({ onProductFound: handleProductFound });
 
-    } catch (error: any) {
-      // Handle error
-      setLoadingError(error.message || 'Product not found');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      
-      // Keep error visible for 3 seconds then dismiss and allow scanning again
-      setTimeout(() => {
-        setIsLoading(false);
-        isCooldownRef.current = false;
-        setIsScanning(true);
-      }, 3000);
-    }
+  const handleBarcodeScanned = async ({ type, data }: { type: string; data?: string }) => {
+    console.log("BARCODE DETECTED");
+    console.log("TYPE:", type);
+    console.log("DATA:", data);
+    console.log("SCAN LOCK:", scanLocked);
+    console.log("LOADING:", isLoading);
+
+    if (scanLocked || isLoading) return;
+
+    setScanLocked(true);
+
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
-      /* haptics optional */
+      // Haptics are optional on some devices and simulators.
     }
 
-    await processBarcode(data);
-    setIsScanning(true);
+    try {
+      const productFound = await processBarcode(data);
+
+      if (productFound) {
+        setTimeout(() => setScanLocked(false), SCAN_LOCK_MS);
+      } else {
+        setScanLocked(false);
+      }
+    } catch (error) {
+      console.error("[ScannerScreen] Barcode processing failed", error);
+      setScanLocked(false);
+    }
   };
 
   const handleManualSubmit = () => {
     const cleaned = manualBarcode.replace(/\D/g, "");
+
     if (!cleaned) {
       setInputError("Please enter a barcode number");
       return;
@@ -129,13 +100,11 @@ export default function ScannerScreen() {
       setInputError("Enter an 8 to 14 digit UPC or EAN code");
       return;
     }
-    
 
     setManualInputVisible(false);
-    processBarcode(cleaned);
     setManualBarcode("");
     setInputError(null);
-    processBarcode(manualBarcode);
+    processBarcode(cleaned);
   };
 
   if (!permission) {
@@ -174,15 +143,15 @@ export default function ScannerScreen() {
         facing="back"
         enableTorch={torchEnabled}
         barcodeScannerSettings={{
-          barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e"],
+          barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39"],
         }}
-        onBarcodeScanned={isScanning && !isLoading ? handleBarcodeScanned : undefined}
+        onBarcodeScanned={handleBarcodeScanned}
       />
 
       <ScannerOverlay
         torchEnabled={torchEnabled}
         onToggleTorch={() => setTorchEnabled(!torchEnabled)}
-        isScanning={isScanning && !isLoading}
+        isScanning={!scanLocked && !isLoading}
       />
 
       <LoadingSteps isVisible={isLoading} step={loadingStep} error={loadingError} />
@@ -205,15 +174,13 @@ export default function ScannerScreen() {
             </Text>
           </View>
 
-          <View className="w-full flex-row gap-4">
-            <TouchableOpacity
-              onPress={() => setManualInputVisible(true)}
-              className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-center gap-2"
-            >
-              <Keyboard size={18} color="#4ADE80" />
-              <Text className="text-white/90 font-bold text-sm">Manual Barcode</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => setManualInputVisible(true)}
+            className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-center gap-2"
+          >
+            <Keyboard size={18} color="#4ADE80" />
+            <Text className="text-white/90 font-bold text-sm">Manual Barcode</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -232,7 +199,7 @@ export default function ScannerScreen() {
 
             <Text className="text-white text-lg font-bold mb-1">Enter Barcode</Text>
             <Text className="text-white/50 text-xs mb-5">
-              Type standard 12-digit UPC or 13-digit EAN code.
+              Type a standard 12-digit UPC or 13-digit EAN code.
             </Text>
 
             <TextInput
@@ -254,12 +221,7 @@ export default function ScannerScreen() {
             )}
 
             <View className="flex-row gap-2 mt-2 mb-4 justify-center flex-wrap">
-              {[
-                { label: "Avocados", upc: "034000000210" },
-                { label: "Yogurt", upc: "041220002105" },
-                { label: "La Croix", upc: "012993102123" },
-                { label: "Pepsi", upc: "012000001765" },
-              ].map((sample) => (
+              {SAMPLE_BARCODES.map((sample) => (
                 <TouchableOpacity
                   key={sample.upc}
                   onPress={() => {
