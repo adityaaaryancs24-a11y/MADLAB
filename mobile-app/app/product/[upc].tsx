@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Share, ActivityIndicator, Linking } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Share, ActivityIndicator, Linking, ScrollView, Image } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import Animated, { 
   useSharedValue, 
@@ -10,12 +10,14 @@ import Animated, {
   FadeInDown,
   FadeIn
 } from "react-native-reanimated";
-import { ArrowLeft, Share2, Bell, Heart, TrendingDown, Info, Tag, XCircle } from "lucide-react-native";
+import { ArrowLeft, Share2, Bell, Heart, Info, Tag, XCircle, AlertTriangle, Sparkles, ChevronRight } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useApp } from "../../src/context/AppContext";
 import { productService, BackendProduct } from "../../services/productService";
+import { NativePriceChart } from "../../src/components/NativePriceChart";
+import { getProductsByCategory, getSimilarProducts, mockProducts } from "../../src/utils/mockData";
 
 const { width } = Dimensions.get("window");
 const HERO_HEIGHT = 380;
@@ -39,6 +41,25 @@ export default function ProductDetailScreen() {
     },
   });
 
+   // Animated Styles
+  const heroAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, HERO_HEIGHT], [-50, 0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0], [1.2, 1], Extrapolation.CLAMP),
+        },
+      ],
+    };
+  });
+
+  const headerOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [HERO_HEIGHT - 100, HERO_HEIGHT - 50], [0, 1], Extrapolation.CLAMP),
+    };
+  });
   useEffect(() => {
     if (productJson) {
       try {
@@ -116,6 +137,7 @@ export default function ProductDetailScreen() {
         id: `watch_${Date.now()}`,
         productId: product.upc,
         name: product.name,
+        brand: product.brand,
         image: product.image,
         currentPrice: lowestPrice,
         previousPrice: averagePrice,
@@ -139,82 +161,54 @@ export default function ProductDetailScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out ${product.brand} ${product.name}! Best price of $${lowestPrice.toFixed(2)} found at ${(bestPriceObj as any)?.store || (bestPriceObj as any)?.retailer}.`,
+        message: `Check out ${product.brand} ${product.name}! Best price of ₹${lowestPrice.toFixed(2)} found at ${(bestPriceObj as any)?.store || (bestPriceObj as any)?.retailer}.`,
       });
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Animated Styles
-  const heroAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(scrollY.value, [-100, 0, HERO_HEIGHT], [-50, 0, HERO_HEIGHT * 0.5], Extrapolation.CLAMP),
-        },
-        {
-          scale: interpolate(scrollY.value, [-100, 0], [1.2, 1], Extrapolation.CLAMP),
-        },
-      ],
-    };
-  });
-
-  const headerOpacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(scrollY.value, [HERO_HEIGHT - 100, HERO_HEIGHT - 50], [0, 1], Extrapolation.CLAMP),
-    };
-  });
+ 
 
   const renderHistoryChart = () => {
     if (!product.price_history || product.price_history.length === 0) return null;
     
-    const prices = product.price_history.map((h) => h.price);
-    const minHPrice = Math.min(...prices);
-    const maxHPrice = Math.max(...prices);
-    const range = maxHPrice - minHPrice || 1;
+    // Map to the format expected by NativePriceChart
+    const chartData = product.price_history.map((h: any) => ({
+      date: new Date(h.date || h.recorded_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      price: h.price
+    }));
+
+    const histPrices = chartData.map(d => d.price);
+    const histLow  = Math.min(...histPrices);
+    const histHigh = Math.max(...histPrices);
+    const currPx   = chartData[chartData.length - 1]?.price ?? 0;
 
     return (
-      <Animated.View entering={FadeInDown.delay(300).springify()} className="bg-[#111827] border border-white/5 rounded-3xl p-5 mb-8">
-        <View className="flex-row justify-between items-center mb-6">
-          <View className="flex-row items-center gap-2">
-            <TrendingDown size={18} color="#4ADE80" />
-            <Text className="text-white font-bold text-base">30-Day Trend</Text>
-          </View>
-          <Text className="text-[#4ADE80] font-bold text-xs bg-[#4ADE80]/10 px-2.5 py-1 rounded-full">
-            Trending Down
-          </Text>
+      <>
+        <NativePriceChart data={chartData} />
+        {/* Historical Low / High row */}
+        <View className="flex-row gap-3 mb-6">
+          {[
+            { label: 'Hist. Low',  value: `₹${histLow.toFixed(0)}`,  color: '#2ECC71' },
+            { label: 'Current',    value: `₹${currPx.toFixed(0)}`,   color: '#3B82F6' },
+            { label: 'Hist. High', value: `₹${histHigh.toFixed(0)}`, color: '#EF4444' },
+          ].map(({ label, value, color }) => (
+            <View key={label} className="flex-1 p-3 bg-white/5 border border-white/10 rounded-2xl items-center">
+              <Text className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: `${color}99` }}>{label}</Text>
+              <Text className="text-white font-bold">{value}</Text>
+            </View>
+          ))}
         </View>
-
-        <View className="flex-row items-end justify-between h-32 pt-4">
-          {product.price_history.slice(0, 7).map((point, index) => {
-            const heightPercent = ((point.price - minHPrice) / range) * 60 + 20;
-            const isLowest = point.price === minHPrice;
-            const dateStr = (point as any).date || (point as any).recorded_at;
-            const dateObj = new Date(dateStr);
-
-            return (
-              <View key={index} className="items-center flex-1">
-                <View 
-                  className={`w-3 rounded-t-lg relative ${isLowest ? 'bg-[#4ADE80]' : 'bg-white/10'}`}
-                  style={{ height: `${heightPercent}%` }}
-                >
-                  {isLowest && (
-                    <View className="absolute -top-7 -left-3 bg-[#4ADE80] px-1.5 py-0.5 rounded text-[10px] font-extrabold text-[#0A0E15]">
-                      ${point.price.toFixed(1)}
-                    </View>
-                  )}
-                </View>
-                <Text className="text-[10px] text-white/30 mt-3 font-medium">
-                  {dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </Animated.View>
+      </>
     );
   };
+
+  const similarProducts =
+    getSimilarProducts(String(product.id), 8).length > 0
+      ? getSimilarProducts(String(product.id), 8)
+      : getProductsByCategory(product.category, 8);
+  const prediction = product.pricePrediction;
 
   return (
     <View className="flex-1 bg-[#0A0E15]">
@@ -278,6 +272,15 @@ export default function ProductDetailScreen() {
             </View>
           </View>
 
+          {(product.warning || product.dataSource === "mock") && (
+            <Animated.View entering={FadeInDown.delay(80).springify()} className="flex-row gap-3 bg-[#F4A261]/10 border border-[#F4A261]/20 rounded-2xl p-4 mb-5">
+              <AlertTriangle size={18} color="#F4A261" />
+              <Text className="text-[#F4A261] text-xs font-semibold leading-5 flex-1">
+                {product.warning || "Live APIs did not return this barcode. Verity is showing realistic mock data so you can continue comparing prices."}
+              </Text>
+            </Animated.View>
+          )}
+
           {/* Title & Brand */}
           <Animated.Text entering={FadeInDown.delay(100).springify()} className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">
             {product.brand}
@@ -324,7 +327,7 @@ export default function ProductDetailScreen() {
                         Best Price Found
                       </Text>
                     </View>
-                    <Text className="text-white text-3xl font-black">${lowestPrice.toFixed(2)}</Text>
+                    <Text className="text-white text-3xl font-black">₹{lowestPrice.toFixed(2)}</Text>
                   </View>
                   <View className="items-end">
                     <Text className="text-white/40 text-xs font-semibold mb-1">at {(bestPriceObj as any).store || (bestPriceObj as any).retailer}</Text>
@@ -367,14 +370,14 @@ export default function ProductDetailScreen() {
                       <View>
                         <Text className="text-white font-bold text-sm">{(priceOption as any).store || (priceOption as any).retailer}</Text>
                         <Text className={`text-xs mt-0.5 font-medium ${
-                          (priceOption as any).stock === 'Out of Stock' || (priceOption as any).in_stock === 'Out of Stock' ? 'text-red-400' : 'text-white/40'
+                          (priceOption as any).stock === 'Out of Stock' || (priceOption as any).in_stock === false ? 'text-red-400' : 'text-white/40'
                         }`}>
                           {(priceOption as any).stock || (priceOption as any).in_stock || 'In Stock'}
                         </Text>
                       </View>
                     </View>
                     <Text className="font-bold text-base text-white">
-                      ${priceOption.price.toFixed(2)}
+                      ₹{priceOption.price.toFixed(2)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -384,6 +387,58 @@ export default function ProductDetailScreen() {
 
           {/* 30-Day Trend Chart */}
           {renderHistoryChart()}
+
+          {prediction && (
+            <Animated.View entering={FadeInDown.delay(325).springify()} className="bg-[#111827] border border-white/5 rounded-3xl p-5 mb-8">
+              <View className="flex-row items-center gap-2 mb-4">
+                <Sparkles size={16} color="#F4A261" />
+                <Text className="text-white font-bold text-sm">Price Prediction</Text>
+              </View>
+              <View className="flex-row justify-between mb-3">
+                <View>
+                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Next {prediction.daysAhead} days</Text>
+                  <Text className="text-white text-xl font-black mt-1">₹{prediction.predictedPrice.toFixed(2)}</Text>
+                </View>
+                <View className="items-end">
+                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Signal</Text>
+                  <Text className="text-[#F4A261] font-black mt-1">{prediction.recommendation}</Text>
+                </View>
+              </View>
+              <Text className="text-white/50 text-xs leading-5">
+                {prediction.trend} with {prediction.confidence}% confidence.
+              </Text>
+            </Animated.View>
+          )}
+
+          {similarProducts.length > 0 && (
+            <Animated.View entering={FadeInDown.delay(340).springify()} className="mb-8">
+              <Text className="text-white/60 font-bold text-xs uppercase tracking-wider mb-4 px-1">
+                Similar Products
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {similarProducts.map((item) => {
+                  const image = item.image || mockProducts[item.id]?.image;
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => router.push(`/product/${item.upc}` as any)}
+                      className="w-40 mr-3 bg-[#111827] border border-white/5 rounded-2xl overflow-hidden"
+                    >
+                      <Image source={{ uri: image }} className="w-full h-24" resizeMode="cover" />
+                      <View className="p-3">
+                        <Text className="text-white/40 text-[10px] font-bold uppercase" numberOfLines={1}>{item.brand}</Text>
+                        <Text className="text-white text-xs font-bold mt-1 leading-4" numberOfLines={2}>{item.name}</Text>
+                        <View className="flex-row items-center mt-2">
+                          <Text className="text-[#2ECC71] text-[11px] font-bold">View</Text>
+                          <ChevronRight size={12} color="#2ECC71" />
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+          )}
 
           {/* Description */}
           {product.description && (

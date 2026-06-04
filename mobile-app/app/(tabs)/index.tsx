@@ -8,8 +8,10 @@ import { Zap, Keyboard, X, ShieldAlert } from "lucide-react-native";
 import { ScannerOverlay } from "../../components/scanner/ScannerOverlay";
 import { LoadingSteps } from "../../components/scanner/LoadingSteps";
 import { productService } from "../../services/productService";
+import { useApp } from "../../src/context/AppContext";
 
 export default function ScannerScreen() {
+  const { addToHistory } = useApp();
   const [permission, requestPermission] = useCameraPermissions();
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [isScanning, setIsScanning] = useState(true);
@@ -56,13 +58,6 @@ export default function ScannerScreen() {
       // Step 2: Fetching product data
       setLoadingStep(1);
       const product = await productService.getProductByUPC(cleanedBarcode);
-      
-      // Map API response to match UI expected schema
-      const mappedProduct = {
-        ...product,
-        id: `prod_${product.upc}`, // ensure an id exists
-        priceHistory: product.price_history // map snake_case to camelCase
-      };
 
       // Step 3: Comparing retailer prices
       setLoadingStep(2);
@@ -75,6 +70,17 @@ export default function ScannerScreen() {
 
       // Reset states
       setIsLoading(false);
+      const bestPrice = productService.getBestPrice(product);
+      addToHistory({
+        id: `scan_${Date.now()}`,
+        productId: product.upc,
+        name: product.name,
+        image: product.image,
+        bestPrice: bestPrice ? `₹${bestPrice.price.toFixed(0)}` : "N/A",
+        store: bestPrice?.store ?? bestPrice?.retailer ?? "Verity",
+        timestamp: Date.now(),
+        upc: product.upc,
+      });
       
       // Cooldown duration before allowing another scan
       setTimeout(() => {
@@ -87,7 +93,7 @@ export default function ScannerScreen() {
         pathname: `/product/${cleanedBarcode}` as any,
         params: {
           upc: cleanedBarcode,
-          productJson: JSON.stringify(mappedProduct),
+          productJson: JSON.stringify(product),
         },
       });
 
@@ -106,13 +112,19 @@ export default function ScannerScreen() {
   };
 
   const handleManualSubmit = () => {
-    if (!manualBarcode.trim()) {
+    const cleaned = manualBarcode.replace(/\D/g, "");
+    if (!cleaned) {
       setInputError("Please enter a barcode number");
+      return;
+    }
+
+    if (cleaned.length < 8 || cleaned.length > 14) {
+      setInputError("Enter an 8 to 14 digit UPC or EAN code");
       return;
     }
     
     setManualInputVisible(false);
-    processBarcode(manualBarcode);
+    processBarcode(cleaned);
     setManualBarcode("");
     setInputError(null);
   };

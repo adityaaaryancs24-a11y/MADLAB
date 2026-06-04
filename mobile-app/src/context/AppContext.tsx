@@ -67,7 +67,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         if (storedWatchlist) {
-          setWatchlist(JSON.parse(storedWatchlist));
+          const savedWatchlist = JSON.parse(storedWatchlist) as WatchlistItem[];
+          setWatchlist(savedWatchlist.filter((item) => !item.id.startsWith("sample_watch_")));
         }
 
         if (storedSettings) {

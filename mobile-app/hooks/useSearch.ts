@@ -53,18 +53,27 @@ function scoreMatch(product: Product, query: string): number {
 export const TRENDING_SEARCHES = [
   "Sony Headphones",
   "Apple Watch",
-  "Nintendo Switch",
-  "Dyson",
-  "AirPods",
-  "JBL Speaker",
+  "iPhone",
+  "Gaming Laptop",
+  "Air Fryer",
+  "Running Shoes",
+  "Greek Yogurt",
+  "Face Serum",
 ];
 
 export const CATEGORY_FILTERS = [
   "All",
-  "Electronics",
-  "Gaming",
-  "Home & Kitchen",
-  "Home Appliances",
+  "Smartphones",
+  "Laptops",
+  "Tablets",
+  "Smart Watches",
+  "Headphones",
+  "Cameras",
+  "Appliances",
+  "Grocery",
+  "Fashion",
+  "Beauty",
+  "Sports",
 ];
 
 // ── Hook ────────────────────────────────────────────────────────────────────
@@ -74,6 +83,7 @@ export function useSearch() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // All products (memoized)
@@ -100,6 +110,12 @@ export function useSearch() {
         .sort((a, b) => b.matchScore - a.matchScore);
 
       setResults(scored);
+      setSuggestions(
+        scored
+          .slice(0, 6)
+          .map((product) => product.name)
+          .filter((name, index, names) => names.indexOf(name) === index)
+      );
       setIsSearching(false);
     },
     [allProducts, activeCategory]
@@ -113,6 +129,7 @@ export function useSearch() {
 
       if (!text.trim()) {
         setResults([]);
+        setSuggestions([]);
         setIsSearching(false);
         return;
       }
@@ -152,6 +169,7 @@ export function useSearch() {
   const clearQuery = useCallback(() => {
     setQuery("");
     setResults([]);
+    setSuggestions([]);
     setIsSearching(false);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
   }, []);
@@ -177,6 +195,7 @@ export function useSearch() {
   return {
     query,
     results,
+    suggestions,
     recentSearches: recentSearchTerms,
     isSearching,
     activeCategory,
