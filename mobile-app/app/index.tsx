@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView } fro
 import { router } from "expo-router";
 import { Mail, Lock, User, Eye, EyeOff, Zap, Sparkles } from "lucide-react-native";
 import { useApp } from "../src/context/AppContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Login() {
   const { login, isAuthenticated } = useApp();
@@ -143,12 +144,20 @@ export default function Login() {
           {/* Submit Button */}
           <TouchableOpacity
             onPress={handleSubmit}
-            className="w-full py-4 mt-4 bg-[#2ECC71] rounded-2xl shadow-xl flex-row items-center justify-center gap-2"
+            className="w-full mt-4 rounded-2xl shadow-xl overflow-hidden"
+            activeOpacity={0.8}
           >
-            <Sparkles size={20} color="#0A0E15" />
-            <Text className="text-[#0A0E15] font-bold">
-              {isSignUp ? "Create Account" : "Sign In"}
-            </Text>
+            <LinearGradient
+              colors={["#2ECC71", "#27AE60"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="w-full py-4 flex-row items-center justify-center gap-2"
+            >
+              <Sparkles size={20} color="#0A0E15" />
+              <Text className="text-[#0A0E15] font-bold text-[16px]">
+                {isSignUp ? "Create Account" : "Sign In"}
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           {!isSignUp && (

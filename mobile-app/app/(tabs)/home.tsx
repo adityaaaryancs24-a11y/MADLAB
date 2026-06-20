@@ -172,7 +172,7 @@ export default function Home() {
               {recentScans.map((scan) => (
                 <TouchableOpacity
                   key={scan.id}
-                  onPress={() => router.push(`/product/${scan.id}`)}
+                  onPress={() => router.push(`/product/${scan.id}` as any)}
                   className="w-24 items-center gap-2 mr-3"
                 >
                   <View className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/10 relative">

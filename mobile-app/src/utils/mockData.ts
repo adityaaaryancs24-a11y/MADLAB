@@ -165,8 +165,8 @@ export function searchProducts(query: string): Product[] {
     return (
       product.name.toLowerCase().includes(searchTerm) ||
       product.brand.toLowerCase().includes(searchTerm) ||
-      product.category.toLowerCase().includes(searchTerm) ||
-      product.description.toLowerCase().includes(searchTerm)
+      (product.category || "").toLowerCase().includes(searchTerm) ||
+      (product.description || "").toLowerCase().includes(searchTerm)
     );
   });
 }
