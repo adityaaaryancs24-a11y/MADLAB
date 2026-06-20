@@ -1,7 +1,27 @@
 import { Tabs } from 'expo-router';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { Home, Search, List, Settings, Scan, Heart } from 'lucide-react-native';
+import { useApp } from '../../src/context/AppContext';
 
 export default function TabLayout() {
+  const { isAuthenticated, isAuthLoading } = useApp();
+
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isAuthLoading]);
+
+  if (isAuthLoading) {
+    return (
+      <View className="flex-1 bg-[#0A0E15] items-center justify-center">
+        <ActivityIndicator color="#2ECC71" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{

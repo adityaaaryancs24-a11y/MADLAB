@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Mail, Lock, User, Eye, EyeOff, Zap, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -7,9 +7,11 @@ import { toast } from "sonner";
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useApp();
+  const location = useLocation();
+  const { login, register, isAuthenticated, isAuthLoading } = useApp();
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,24 +20,39 @@ export function Login() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/home");
+    if (!isAuthLoading && isAuthenticated) {
+      navigate("/home", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAuthLoading, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Mock authentication
-    const user = {
-      id: Math.random().toString(36).substring(7),
-      name: formData.name || formData.email.split("@")[0],
-      email: formData.email,
-    };
-    
-    login(user);
-    toast.success(isSignUp ? "Account created successfully!" : "Welcome back!");
-    navigate("/onboarding");
+
+    setIsSubmitting(true);
+    try {
+      if (isSignUp) {
+        await register({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+        });
+        toast.success("Account created successfully!");
+        navigate("/onboarding", { replace: true });
+        return;
+      }
+
+      await login({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      toast.success("Welcome back!");
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      navigate(from && from !== "/login" ? from : "/home", { replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Authentication failed");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -100,6 +117,7 @@ export function Login() {
           {/* Tab Switcher */}
           <div className="flex gap-2 mb-8 p-1.5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
             <button
+              type="button"
               onClick={() => setIsSignUp(false)}
               className={`flex-1 py-3.5 rounded-xl font-semibold transition-all ${
                 !isSignUp
@@ -110,6 +128,7 @@ export function Login() {
               Log In
             </button>
             <button
+              type="button"
               onClick={() => setIsSignUp(true)}
               className={`flex-1 py-3.5 rounded-xl font-semibold transition-all ${
                 isSignUp
@@ -142,6 +161,7 @@ export function Login() {
                     placeholder="John Doe"
                     className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/30 focus:border-[#2ECC71] focus:outline-none focus:ring-2 focus:ring-[#2ECC71]/50 transition-all"
                     required={isSignUp}
+                    disabled={isSubmitting}
                   />
                 </div>
               </motion.div>
@@ -161,6 +181,7 @@ export function Login() {
                   placeholder="you@example.com"
                   className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/30 focus:border-[#2ECC71] focus:outline-none focus:ring-2 focus:ring-[#2ECC71]/50 transition-all"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -179,6 +200,8 @@ export function Login() {
                   placeholder="••••••••"
                   className="w-full pl-12 pr-14 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-white/30 focus:border-[#2ECC71] focus:outline-none focus:ring-2 focus:ring-[#2ECC71]/50 transition-all"
                   required
+                  minLength={6}
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
@@ -199,10 +222,11 @@ export function Login() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
+              disabled={isSubmitting}
               className="w-full py-4 mt-8 bg-gradient-to-r from-[#2ECC71] to-[#25A65A] text-[#0A0E15] font-bold rounded-2xl shadow-2xl shadow-[#2ECC71]/40 hover:shadow-[#2ECC71]/60 transition-all flex items-center justify-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
-              {isSignUp ? "Create Account" : "Sign In"}
+              {isSubmitting ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
             </motion.button>
 
             {/* Forgot Password (Login Only) */}
@@ -211,6 +235,7 @@ export function Login() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 type="button"
+                onClick={() => toast.info("Password reset is not available yet. Use your email and password to sign in.")}
                 className="w-full text-sm text-white/50 hover:text-[#2ECC71] transition-colors mt-4"
               >
                 Forgot your password?
@@ -235,6 +260,8 @@ export function Login() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={() => toast.info("JWT authentication is enabled for email and password sign-in.")}
                 className="px-4 py-3.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white/70 font-semibold hover:bg-white/10 transition-all"
               >
                 Google
@@ -242,6 +269,8 @@ export function Login() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={() => toast.info("JWT authentication is enabled for email and password sign-in.")}
                 className="px-4 py-3.5 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-white/70 font-semibold hover:bg-white/10 transition-all"
               >
                 Apple

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import type { AppState, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
+import type { AppState, AuthCredentials, RegisterCredentials, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
+import { clearStoredToken, fetchCurrentUser, getStoredToken, loginUser, registerUser, storeToken } from "../services/authService";
 
 interface AppContextType extends AppState {
   addToHistory: (item: ScanHistoryItem) => void;
@@ -9,7 +10,8 @@ interface AppContextType extends AppState {
   removeFromWatchlist: (id: string) => void;
   updateWatchlistItem: (id: string, updates: Partial<WatchlistItem>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
-  login: (user: User) => void;
+  login: (credentials: AuthCredentials) => Promise<User>;
+  register: (credentials: RegisterCredentials) => Promise<User>;
   logout: () => void;
   addToSearchHistory: (query: string, resultsCount: number) => void;
   clearSearchHistory: () => void;
@@ -56,21 +58,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("verity_user");
     const storedHistory = localStorage.getItem("verity_history");
     const storedWatchlist = localStorage.getItem("verity_watchlist");
     const storedSettings = localStorage.getItem("verity_settings");
     const storedSearchHistory = localStorage.getItem("verity_search_history");
-
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
 
     if (storedHistory) {
       setScanHistory(JSON.parse(storedHistory));
@@ -87,6 +83,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (storedSearchHistory) {
       setSearchHistory(JSON.parse(storedSearchHistory));
     }
+
+    const token = getStoredToken();
+    if (!token) {
+      setIsAuthLoading(false);
+      return;
+    }
+
+    fetchCurrentUser(token)
+      .then((userData) => {
+        setUser(userData);
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        clearStoredToken();
+        localStorage.removeItem("verity_user");
+        setUser(null);
+        setIsAuthenticated(false);
+      })
+      .finally(() => setIsAuthLoading(false));
   }, []);
 
   // Persist data to localStorage
@@ -154,9 +169,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
-  const login = (userData: User) => {
+  const handleAuthSuccess = (token: string, userData: User) => {
+    storeToken(token);
     setUser(userData);
     setIsAuthenticated(true);
+    return userData;
+  };
+
+  const login = async (credentials: AuthCredentials) => {
+    const auth = await loginUser(credentials);
+    return handleAuthSuccess(auth.accessToken, auth.user);
+  };
+
+  const register = async (credentials: RegisterCredentials) => {
+    const auth = await registerUser(credentials);
+    return handleAuthSuccess(auth.accessToken, auth.user);
   };
 
   const logout = () => {
@@ -166,6 +193,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setWatchlist([]);
     setSettings(defaultSettings);
     localStorage.clear();
+    clearStoredToken();
   };
 
   const addToSearchHistory = (query: string, resultsCount: number) => {
@@ -211,6 +239,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     watchlist,
     settings,
     isAuthenticated,
+    isAuthLoading,
     searchHistory,
     addToHistory,
     removeFromHistory,
@@ -220,6 +249,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateWatchlistItem,
     updateSettings,
     login,
+    register,
     logout,
     addToSearchHistory,
     clearSearchHistory,

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { AppState, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
+import type { AppState, AuthCredentials, RegisterCredentials, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
+import { clearStoredToken, fetchCurrentUser, getStoredToken, loginUser, registerUser, storeToken } from "../../services/authService";
 
 interface AppContextType extends AppState {
   addToHistory: (item: ScanHistoryItem) => void;
@@ -10,7 +11,8 @@ interface AppContextType extends AppState {
   removeFromWatchlist: (id: string) => void;
   updateWatchlistItem: (id: string, updates: Partial<WatchlistItem>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
-  login: (user: User) => void;
+  login: (credentials: AuthCredentials) => Promise<User>;
+  register: (credentials: RegisterCredentials) => Promise<User>;
   logout: () => void;
   addToSearchHistory: (query: string, resultsCount: number) => void;
   clearSearchHistory: () => void;
@@ -57,6 +59,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isReady, setIsReady] = useState(false);
 
@@ -64,17 +67,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("verity_user");
         const storedHistory = await AsyncStorage.getItem("verity_history");
         const storedWatchlist = await AsyncStorage.getItem("verity_watchlist");
         const storedSettings = await AsyncStorage.getItem("verity_settings");
         const storedSearchHistory = await AsyncStorage.getItem("verity_search_history");
-
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
-        }
 
         if (storedHistory) {
           setScanHistory(JSON.parse(storedHistory));
@@ -92,9 +88,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (storedSearchHistory) {
           setSearchHistory(JSON.parse(storedSearchHistory));
         }
+
+        const token = await getStoredToken();
+        if (token) {
+          const currentUser = await fetchCurrentUser(token);
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        }
       } catch (error) {
         console.error("Failed to load initial data", error);
+        await clearStoredToken();
+        await AsyncStorage.removeItem("verity_user");
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
+        setIsAuthLoading(false);
         setIsReady(true);
       }
     };
@@ -173,9 +181,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
-  const login = (userData: User) => {
+  const handleAuthSuccess = async (token: string, userData: User) => {
+    await storeToken(token);
     setUser(userData);
     setIsAuthenticated(true);
+    return userData;
+  };
+
+  const login = async (credentials: AuthCredentials) => {
+    const auth = await loginUser(credentials);
+    return handleAuthSuccess(auth.accessToken, auth.user);
+  };
+
+  const register = async (credentials: RegisterCredentials) => {
+    const auth = await registerUser(credentials);
+    return handleAuthSuccess(auth.accessToken, auth.user);
   };
 
   const logout = () => {
@@ -185,6 +205,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setWatchlist([]);
     setSettings(defaultSettings);
     AsyncStorage.clear();
+    clearStoredToken();
   };
 
   const addToSearchHistory = (query: string, resultsCount: number) => {
@@ -229,6 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     watchlist,
     settings,
     isAuthenticated,
+    isAuthLoading,
     searchHistory,
     addToHistory,
     removeFromHistory,
@@ -238,6 +260,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateWatchlistItem,
     updateSettings,
     login,
+    register,
     logout,
     addToSearchHistory,
     clearSearchHistory,

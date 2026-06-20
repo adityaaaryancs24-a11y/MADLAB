@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import products
+from app.routers import auth, products
 from app.database import engine, Base
+from app.models import product, user  # noqa: F401
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(products.router)
 
 @app.get("/")

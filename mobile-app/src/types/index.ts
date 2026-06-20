@@ -94,7 +94,22 @@ export interface User {
   email: string;
   password?: string;
   avatar?: string;
-  membershipTier?: 'Free' | 'Pro';
+  membershipTier?: 'Free' | 'Pro' | string;
+}
+
+export interface AuthCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterCredentials extends AuthCredentials {
+  name: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  tokenType: string;
+  user: User;
 }
 
 export interface AppState {
@@ -103,6 +118,7 @@ export interface AppState {
   watchlist: WatchlistItem[];
   settings: UserSettings;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
   searchHistory: SearchHistoryItem[];
 }
 
