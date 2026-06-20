@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceDot } from "recharts";
 import { motion } from "motion/react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
@@ -19,6 +19,34 @@ export function PriceHistoryChart({ data }: PriceHistoryChartProps) {
     ...item,
     id: `${item.date}-${index}`,
   }));
+
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    const isMin = payload.price === minPrice;
+    const isMax = payload.price === maxPrice;
+    const isCurrent = payload.date === data[data.length - 1]?.date;
+
+    if (isMin) {
+      return (
+        <g>
+          <circle cx={cx} cy={cy} r={6} fill="#2ECC71" stroke="#0A0E15" strokeWidth={2} />
+          <text x={cx} y={cy - 12} textAnchor="middle" fill="#2ECC71" fontSize={10} fontWeight="bold">Low</text>
+        </g>
+      );
+    }
+    if (isMax) {
+      return (
+        <g>
+          <circle cx={cx} cy={cy} r={6} fill="#EF4444" stroke="#0A0E15" strokeWidth={2} />
+          <text x={cx} y={cy - 12} textAnchor="middle" fill="#EF4444" fontSize={10} fontWeight="bold">High</text>
+        </g>
+      );
+    }
+    if (isCurrent && !isMin && !isMax) {
+      return <circle cx={cx} cy={cy} r={5} fill="#3B82F6" stroke="#0A0E15" strokeWidth={2} />;
+    }
+    return null;
+  };
 
   return (
     <motion.div
@@ -94,7 +122,9 @@ export function PriceHistoryChart({ data }: PriceHistoryChartProps) {
             stroke="#2ECC71"
             strokeWidth={3}
             fill="url(#colorPrice)"
-            isAnimationActive={false}
+            isAnimationActive={true}
+            dot={<CustomDot />}
+            activeDot={{ r: 6, fill: "#fff", stroke: "#2ECC71", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
