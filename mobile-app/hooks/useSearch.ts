@@ -7,18 +7,38 @@ const DEBOUNCE_MS = 250;
 
 export type SearchResult = Product & { matchScore: number };
 
+// Minimum score a product must reach to appear in results.
+// Score 25 = description-only match (too loose) — we require >= 30.
+const SCORE_THRESHOLD = 30;
+
 // ── Scoring ─────────────────────────────────────────────────────────────────
 function scoreMatch(product: Product, query: string): number {
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().trim();
   const name = product.name.toLowerCase();
   const brand = product.brand.toLowerCase();
   const category = (product.category ?? "").toLowerCase();
-  const desc = (product.description ?? "").toLowerCase();
   const model = product.model.toLowerCase();
 
   // Exact UPC match → top priority
   if (product.upc === q) return 100;
 
+  // ── Multi-word AND gate ────────────────────────────────────────────────
+  // If the query has multiple words, every word must appear in the
+  // combined name+brand+category string. Return 0 immediately if any word
+  // is absent (prevents loose partial matches).
+  const words = q.split(/\s+/).filter(Boolean);
+  if (words.length > 1) {
+    const haystack = `${name} ${brand} ${category} ${model}`;
+    const allWordsMatch = words.every((w) => haystack.includes(w));
+    if (!allWordsMatch) return 0;
+    // Give a base score; bonus for name/brand specificity
+    let multiScore = 30;
+    if (words.every((w) => name.includes(w))) multiScore = Math.max(multiScore, 65);
+    if (words.every((w) => `${name} ${brand}`.includes(w))) multiScore = Math.max(multiScore, 55);
+    return multiScore;
+  }
+
+  // ── Single-word scoring ────────────────────────────────────────────────
   let score = 0;
 
   // Name matching (highest weight)
@@ -37,14 +57,14 @@ function scoreMatch(product: Product, query: string): number {
   // Category matching
   if (category.includes(q)) score = Math.max(score, 40);
 
-  // Description matching
-  if (desc.includes(q)) score = Math.max(score, 25);
-
-  // Word boundary bonus: if query matches start of any word
-  const words = name.split(/\s+/);
-  if (words.some((w) => w.startsWith(q))) {
+  // Word boundary bonus: if query matches the start of any word in the name
+  const nameWords = name.split(/\s+/);
+  if (nameWords.some((w) => w.startsWith(q))) {
     score = Math.max(score, score + 5);
   }
+
+  // NOTE: description matching intentionally removed — score 25 was below
+  // the threshold anyway and caused unrelated results to surface.
 
   return score;
 }
@@ -101,7 +121,7 @@ export function useSearch() {
 
       const scored: SearchResult[] = allProducts
         .map((p) => ({ ...p, matchScore: scoreMatch(p, trimmed) }))
-        .filter((p) => p.matchScore > 0)
+        .filter((p) => p.matchScore >= SCORE_THRESHOLD)
         .filter(
           (p) =>
             category === "All" ||

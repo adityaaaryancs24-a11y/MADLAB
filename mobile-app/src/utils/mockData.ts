@@ -51,7 +51,7 @@ const originalProducts: Record<string, Product> = {
     model: "WH-1000XM5",
     upc: "027242920425",
     image: "https://images.unsplash.com/photo-1578517581165-61ec5ab27a19?w=500",
-    category: "Electronics",
+    category: "Headphones",
     description: "Industry-leading noise canceling with Auto NC Optimizer",
   },
   "2": {
@@ -60,8 +60,8 @@ const originalProducts: Record<string, Product> = {
     brand: "Apple",
     model: "Series 9",
     upc: "194253407744",
-    image: "https://images.unsplash.com/photo-1739287700815-7eef4abaab4d?w=500",
-    category: "Electronics",
+    image: "https://images.unsplash.com/photo-1617043786394-f977fa12eddf?w=500",
+    category: "Smart Watches",
     description: "Advanced health features with S9 chip",
   },
   "3": {
@@ -70,8 +70,8 @@ const originalProducts: Record<string, Product> = {
     brand: "Keurig",
     model: "K-Elite",
     upc: "611247373835",
-    image: "https://images.unsplash.com/photo-1607273177147-e7304c4d5d6c?w=500",
-    category: "Home & Kitchen",
+    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500",
+    category: "Appliances",
     description: "Single serve K-Cup pod coffee maker",
   },
   "4": {
@@ -86,12 +86,12 @@ const originalProducts: Record<string, Product> = {
   },
   "5": {
     id: "5",
-    name: "Dyson V15 Detect",
+    name: "Dyson V15 Detect Cordless Vacuum",
     brand: "Dyson",
     model: "V15 Detect",
     upc: "885609021843",
     image: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=500",
-    category: "Home Appliances",
+    category: "Appliances",
     description: "Intelligent cordless vacuum with laser detection",
   },
   "6": {
@@ -100,8 +100,8 @@ const originalProducts: Record<string, Product> = {
     brand: "Bose",
     model: "QC45",
     upc: "017817822640",
-    image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500",
-    category: "Electronics",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+    category: "Headphones",
     description: "Premium noise-cancelling over-ear headphones",
   },
   "7": {
@@ -141,7 +141,7 @@ const originalProducts: Record<string, Product> = {
     model: "AirPods Pro",
     upc: "194253398615",
     image: "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=500",
-    category: "Electronics",
+    category: "Headphones",
     description: "Active noise cancellation wireless earbuds",
   },
   "11": {
@@ -151,7 +151,7 @@ const originalProducts: Record<string, Product> = {
     model: "Galaxy Buds2 Pro",
     upc: "887276636443",
     image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500",
-    category: "Electronics",
+    category: "Headphones",
     description: "Intelligent 360-degree audio earbuds",
   },
   "12": {
@@ -160,9 +160,9 @@ const originalProducts: Record<string, Product> = {
     brand: "Marshall",
     model: "Emberton II",
     upc: "748931010863",
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
     category: "Electronics",
-    description: "Compact portable Bluetooth speaker",
+    description: "Compact portable Bluetooth speaker with rich sound",
   },
   "13": {
     id: "13",
@@ -171,7 +171,7 @@ const originalProducts: Record<string, Product> = {
     model: "Studio Pro",
     upc: "194253854142",
     image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500",
-    category: "Electronics",
+    category: "Headphones",
     description: "Premium wireless headphones with spatial audio",
   },
   "14": {
@@ -180,7 +180,7 @@ const originalProducts: Record<string, Product> = {
     brand: "Anker",
     model: "Motion+",
     upc: "848061073294",
-    image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500",
+    image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500",
     category: "Electronics",
     description: "Hi-Res 30W Bluetooth speaker",
   },
@@ -191,8 +191,59 @@ const originalProducts: Record<string, Product> = {
     model: "Momentum 4",
     upc: "615104393943",
     image: "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=500",
-    category: "Electronics",
+    category: "Headphones",
     description: "Audiophile wireless headphones with 60-hour battery",
+  },
+  // ── Real-world grocery UPCs for manual barcode entry testing ──
+  "g1": {
+    id: "g1",
+    name: "Chiquita Bananas",
+    brand: "Chiquita",
+    model: "",
+    upc: "4011",
+    image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500",
+    category: "Grocery",
+    description: "Fresh Chiquita bananas, sold by the bunch.",
+  },
+  "g2": {
+    id: "g2",
+    name: "Organic Hass Avocado",
+    brand: "Organic Valley",
+    model: "",
+    upc: "3107970189738",
+    image: "https://images.unsplash.com/photo-1522184216316-3c25379f9760?w=500",
+    category: "Grocery",
+    description: "Ripe organic Hass avocados, perfect for guacamole.",
+  },
+  "g3": {
+    id: "g3",
+    name: "Coca-Cola Classic 355ml",
+    brand: "Coca-Cola",
+    model: "355ml Can",
+    upc: "049000028904",
+    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500",
+    category: "Grocery",
+    description: "The original Coca-Cola, 355ml aluminium can.",
+  },
+  "g4": {
+    id: "g4",
+    name: "Kellogg's Corn Flakes",
+    brand: "Kellogg's",
+    model: "500g Box",
+    upc: "038000138416",
+    image: "https://images.unsplash.com/photo-1504707748692-419802cf939d?w=500",
+    category: "Grocery",
+    description: "Classic toasted corn flakes breakfast cereal, 500g.",
+  },
+  "g5": {
+    id: "g5",
+    name: "General Mills Cheerios",
+    brand: "General Mills",
+    model: "340g Box",
+    upc: "00016000119505",
+    image: "https://images.unsplash.com/photo-1517093602195-b40af9688dca?w=500",
+    category: "Grocery",
+    description: "Whole grain oat cereal, heart-healthy, 340g.",
   },
 };
 
@@ -212,11 +263,36 @@ const categories = [
       "Home Appliances": ["Air Purifier X", "Smart Robot Vacuum", "Espresso Barista", "Super Blender 900", "Induction Cooktop"]
     },
     images: {
-      Laptops: "https://images.unsplash.com/photo-1496181130204-755241544e35?w=500",
-      Phones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
-      Headphones: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
-      "Smart Watches": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
-      "Home Appliances": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500"
+      Laptops: [
+        "https://images.unsplash.com/photo-1496181130204-755241544e35?w=500",
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
+        "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500",
+        "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+      ],
+      Phones: [
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
+        "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500",
+        "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500",
+        "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500",
+      ],
+      Headphones: [
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+        "https://images.unsplash.com/photo-1578517581165-61ec5ab27a19?w=500",
+        "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500",
+        "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=500",
+      ],
+      "Smart Watches": [
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+        "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500",
+        "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500",
+        "https://images.unsplash.com/photo-1617043786394-f977fa12eddf?w=500",
+      ],
+      "Home Appliances": [
+        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500",
+        "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=500",
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500",
+        "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=500",
+      ],
     }
   },
   {
@@ -231,11 +307,36 @@ const categories = [
       Snacks: ["Roasted Salted Almonds", "Sea Salt Potato Chips", "Organic Tortilla Chips", "Protein Energy Bars", "Dark Chocolate Pretzels"]
     },
     images: {
-      Beverages: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500",
-      Dairy: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500",
-      Produce: "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=500",
-      Bakery: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500",
-      Snacks: "https://images.unsplash.com/photo-1599490659213-e2b9527b0876?w=500"
+      Beverages: [
+        "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500",
+        "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=500",
+        "https://images.unsplash.com/photo-1571066811602-716837d681de?w=500",
+        "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500",
+      ],
+      Dairy: [
+        "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500",
+        "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500",
+        "https://images.unsplash.com/photo-1506459225024-1428097a7e18?w=500",
+        "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500",
+      ],
+      Produce: [
+        "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=500",
+        "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500",
+        "https://images.unsplash.com/photo-1522184216316-3c25379f9760?w=500",
+        "https://images.unsplash.com/photo-1543257580-7269da773bf5?w=500",
+      ],
+      Bakery: [
+        "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500",
+        "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=500",
+        "https://images.unsplash.com/photo-1558303782-44c6c3b2b4fd?w=500",
+        "https://images.unsplash.com/photo-1603532648955-039310d9ed75?w=500",
+      ],
+      Snacks: [
+        "https://images.unsplash.com/photo-1599490659213-e2b9527b0876?w=500",
+        "https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=500",
+        "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=500",
+        "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=500",
+      ],
     }
   },
   {
@@ -250,11 +351,36 @@ const categories = [
       Activewear: ["Dry-Fit Training Shorts", "High-Waist Compression Leggings", "Athletic Quarter-Zip Pullover", "Performance Racerback Tank", "Tech Fleece Sweatpants"]
     },
     images: {
-      Shirts: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500",
-      Pants: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500",
-      Shoes: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
-      Jackets: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500",
-      Activewear: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500"
+      Shirts: [
+        "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500",
+        "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=500",
+        "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=500",
+        "https://images.unsplash.com/photo-1594938298603-c8148c4b1abb?w=500",
+      ],
+      Pants: [
+        "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500",
+        "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500",
+        "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500",
+        "https://images.unsplash.com/photo-1559582798-678dfc71ccd8?w=500",
+      ],
+      Shoes: [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
+        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=500",
+        "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500",
+        "https://images.unsplash.com/photo-1539185441755-769473a23570?w=500",
+      ],
+      Jackets: [
+        "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500",
+        "https://images.unsplash.com/photo-1548126032-079a0fb0099d?w=500",
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500",
+        "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=500",
+      ],
+      Activewear: [
+        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500",
+        "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=500",
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500",
+        "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500",
+      ],
     }
   },
   {
@@ -268,10 +394,30 @@ const categories = [
       Fragrance: ["Eau De Parfum Floral Breeze", "Cedarwood & Amber Cologne", "Ocean Mist Body Spray", "Vanilla Bean Roll-On Oil", "Fresh Lavender Mist"]
     },
     images: {
-      Skincare: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=500",
-      Haircare: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500",
-      Makeup: "https://images.unsplash.com/photo-1522337060767-14170287944b?w=500",
-      Fragrance: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=500"
+      Skincare: [
+        "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=500",
+        "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500",
+        "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=500",
+        "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=500",
+      ],
+      Haircare: [
+        "https://images.unsplash.com/photo-1522337060767-14170287944b?w=500",
+        "https://images.unsplash.com/photo-1631390002010-3a8c1ed4568e?w=500",
+        "https://images.unsplash.com/photo-1585751119414-ef2636f8aede?w=500",
+        "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=500",
+      ],
+      Makeup: [
+        "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500",
+        "https://images.unsplash.com/photo-1583241800698-e8ab01830a23?w=500",
+        "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500",
+        "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500",
+      ],
+      Fragrance: [
+        "https://images.unsplash.com/photo-1541643600914-78b084683601?w=500",
+        "https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=500",
+        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=500",
+        "https://images.unsplash.com/photo-1588776814546-1ffedced9d2f?w=500",
+      ],
     }
   },
   {
@@ -285,10 +431,30 @@ const categories = [
       Cycling: ["Hybrid Commuter Bike 21-Speed", "Impact-Shield Helmet MIPS", "Waterproof Saddle Storage Bag", "Rechargeable LED Bike Lights", "Ergonomic Padded Bike Shorts"]
     },
     images: {
-      "Fitness Gear": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500",
-      Outdoor: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=500",
-      "Team Sports": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500",
-      Cycling: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500"
+      "Fitness Gear": [
+        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500",
+        "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500",
+        "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500",
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500",
+      ],
+      Outdoor: [
+        "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=500",
+        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=500",
+        "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?w=500",
+        "https://images.unsplash.com/photo-1496080174650-637e3f22fa03?w=500",
+      ],
+      "Team Sports": [
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500",
+        "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=500",
+        "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=500",
+        "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=500",
+      ],
+      Cycling: [
+        "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500",
+        "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=500",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
+        "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=500",
+      ],
     }
   }
 ];
@@ -307,10 +473,30 @@ const productCatalogCategories = [
       "Camera Phone": ["Studio Camera Phone", "NightShot Mobile", "Creator Lens Phone"],
     },
     images: {
-      Flagship: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
-      Foldable: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500",
-      Budget: "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500",
-      "Camera Phone": "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500",
+      Flagship: [
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
+        "https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=500",
+        "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=500",
+        "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500",
+      ],
+      Foldable: [
+        "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500",
+        "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?w=500",
+        "https://images.unsplash.com/photo-1567581935884-3349723552ca?w=500",
+        "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500",
+      ],
+      Budget: [
+        "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500",
+        "https://images.unsplash.com/photo-1555617117-08c9b648de21?w=500",
+        "https://images.unsplash.com/photo-1607162617594-17c9d6f2e0e6?w=500",
+        "https://images.unsplash.com/photo-1529653762956-b0a27278529c?w=500",
+      ],
+      "Camera Phone": [
+        "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500",
+        "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500",
+        "https://images.unsplash.com/photo-1579771346-a68a5b4d1a22?w=500",
+        "https://images.unsplash.com/photo-1546514714-df0ccc50d7bf?w=500",
+      ],
     },
   },
   {
@@ -324,10 +510,30 @@ const productCatalogCategories = [
       Business: ["ThinkBook Secure", "Latitude Pro Laptop", "Executive Notebook"],
     },
     images: {
-      Ultrabooks: "https://images.unsplash.com/photo-1496181130204-755241544e35?w=500",
-      Gaming: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500",
-      Creator: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
-      Business: "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+      Ultrabooks: [
+        "https://images.unsplash.com/photo-1496181130204-755241544e35?w=500",
+        "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=500",
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
+        "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+      ],
+      Gaming: [
+        "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500",
+        "https://images.unsplash.com/photo-1593640408182-31c228c3f1fb?w=500",
+        "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=500",
+        "https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?w=500",
+      ],
+      Creator: [
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500",
+        "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=500",
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500",
+      ],
+      Business: [
+        "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+        "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500",
+        "https://images.unsplash.com/photo-1504707748692-419802cf939d?w=500",
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=500",
+      ],
     },
   },
   {
@@ -341,10 +547,30 @@ const productCatalogCategories = [
       Productivity: ["Keyboard Tablet", "WorkPad 2-in-1", "Office Slate"],
     },
     images: {
-      Media: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500",
-      Drawing: "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=500",
-      Kids: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500",
-      Productivity: "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=500",
+      Media: [
+        "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500",
+        "https://images.unsplash.com/photo-1555617117-08c9b648de21?w=500",
+        "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=500",
+        "https://images.unsplash.com/photo-1587033411391-5d9e51cce126?w=500",
+      ],
+      Drawing: [
+        "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=500",
+        "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?w=500",
+        "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500",
+        "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=500",
+      ],
+      Kids: [
+        "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500",
+        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500",
+        "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=500",
+        "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+      ],
+      Productivity: [
+        "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=500",
+        "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=500",
+        "https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=500",
+        "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=500",
+      ],
     },
   },
   {
@@ -358,10 +584,30 @@ const productCatalogCategories = [
       Kids: ["Family Safety Watch", "Junior GPS Watch", "School Mode Watch"],
     },
     images: {
-      Fitness: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
-      Outdoor: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500",
-      Luxury: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500",
-      Kids: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500",
+      Fitness: [
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+        "https://images.unsplash.com/photo-1617043786394-f977fa12eddf?w=500",
+        "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500",
+        "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=500",
+      ],
+      Outdoor: [
+        "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500",
+        "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500",
+        "https://images.unsplash.com/photo-1544117519-31a4b719223d?w=500",
+        "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500",
+      ],
+      Luxury: [
+        "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=500",
+        "https://images.unsplash.com/photo-1607285801065-a5a2b9be69e7?w=500",
+        "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=500",
+        "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=500",
+      ],
+      Kids: [
+        "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500",
+        "https://images.unsplash.com/photo-1561127344-4ac31b7cc929?w=500",
+        "https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=500",
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
+      ],
     },
   },
   {
@@ -375,10 +621,30 @@ const productCatalogCategories = [
       Studio: ["Monitor Studio Headphones", "Reference Mixing Headphones", "Open Back Studio Cans"],
     },
     images: {
-      "Over Ear": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
-      Earbuds: "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=500",
-      Gaming: "https://images.unsplash.com/photo-1599669454699-248893623440?w=500",
-      Studio: "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=500",
+      "Over Ear": [
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+        "https://images.unsplash.com/photo-1578517581165-61ec5ab27a19?w=500",
+        "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500",
+        "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500",
+      ],
+      Earbuds: [
+        "https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=500",
+        "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500",
+        "https://images.unsplash.com/photo-1588423771073-b8903febb85b?w=500",
+        "https://images.unsplash.com/photo-1613040809024-b4ef7ba99bc3?w=500",
+      ],
+      Gaming: [
+        "https://images.unsplash.com/photo-1599669454699-248893623440?w=500",
+        "https://images.unsplash.com/photo-1614624532983-4ce03382d63d?w=500",
+        "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500",
+        "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=500",
+      ],
+      Studio: [
+        "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=500",
+        "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=500",
+        "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500",
+        "https://images.unsplash.com/photo-1619983081563-430f63602796?w=500",
+      ],
     },
   },
   {
@@ -392,10 +658,30 @@ const productCatalogCategories = [
       Security: ["Outdoor Security Camera", "Video Doorbell Camera", "Indoor Pan Camera"],
     },
     images: {
-      Mirrorless: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500",
-      Action: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500",
-      Instant: "https://images.unsplash.com/photo-1495707902641-75cac588d2e9?w=500",
-      Security: "https://images.unsplash.com/photo-1558002038-1055907df827?w=500",
+      Mirrorless: [
+        "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500",
+        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500",
+        "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500",
+        "https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=500",
+      ],
+      Action: [
+        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500",
+        "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=500",
+        "https://images.unsplash.com/photo-1601785093873-c2f41c36f98b?w=500",
+        "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500",
+      ],
+      Instant: [
+        "https://images.unsplash.com/photo-1495707902641-75cac588d2e9?w=500",
+        "https://images.unsplash.com/photo-1452780212461-9b5f64cf70be?w=500",
+        "https://images.unsplash.com/photo-1512697397-0af7fa6df94a?w=500",
+        "https://images.unsplash.com/photo-1569696483078-be7e1e53d3c4?w=500",
+      ],
+      Security: [
+        "https://images.unsplash.com/photo-1558002038-1055907df827?w=500",
+        "https://images.unsplash.com/photo-1580593407272-5f7a2a9c2b14?w=500",
+        "https://images.unsplash.com/photo-1583071933027-8f4eff7b99a2?w=500",
+        "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500",
+      ],
     },
   },
   {
@@ -409,10 +695,30 @@ const productCatalogCategories = [
       Laundry: ["Front Load Washer", "Heat Pump Dryer", "Garment Steamer"],
     },
     images: {
-      Kitchen: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=500",
-      Cleaning: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=500",
-      Climate: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500",
-      Laundry: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500",
+      Kitchen: [
+        "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=500",
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500",
+        "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500",
+        "https://images.unsplash.com/photo-1588504938785-f3efde33c8cc?w=500",
+      ],
+      Cleaning: [
+        "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=500",
+        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500",
+        "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=500",
+        "https://images.unsplash.com/photo-1607920591413-4ec007e70023?w=500",
+      ],
+      Climate: [
+        "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500",
+        "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=500",
+        "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500",
+        "https://images.unsplash.com/photo-1564492831-c35fe4a64455?w=500",
+      ],
+      Laundry: [
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
+        "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=500",
+        "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?w=500",
+      ],
     },
   },
   ...categories.filter((category) =>
@@ -446,7 +752,8 @@ function buildProceduralDatabase() {
     const upc = (890123000000 + itemIndex).toString();
     const name = `${adj} ${brand} ${noun}`;
     const model = `${adj}-${rng.intRange(100, 999)}`;
-    const image = (categoryInfo.images as unknown as Record<string, string>)[subcategory] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500";
+    const imagePool = (categoryInfo.images as unknown as Record<string, string[]>)[subcategory] || ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"];
+    const image = imagePool[itemIndex % imagePool.length];
 
     const rating = parseFloat(rng.range(3.8, 5.0).toFixed(1));
     const reviewsCount = rng.intRange(12, 1850);
@@ -570,13 +877,8 @@ export function getMockPrices(productId: string): PriceInfo[] {
 export function lookupBarcode(barcode: string): Product | null {
   const allProducts = Object.values(mockProducts);
   const found = allProducts.find(p => p.upc === barcode);
-  if (found) return found;
-
-  // Otherwise, return a random product based on barcode string hash as seed
-  const rng = new SeededRandom(getSeedFromId(barcode));
-  const productIds = Object.keys(mockProducts);
-  const randomId = productIds[rng.intRange(0, productIds.length)];
-  return mockProducts[randomId];
+  // Return null when not found — NEVER return a random unrelated product.
+  return found ?? null;
 }
 
 export function generatePriceHistory(days: number = 30, productId?: string): Array<{ date: string; price: number }> {

@@ -20,6 +20,8 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
+  withSpring,
 } from "react-native-reanimated";
 import {
   AlertTriangle,
@@ -66,6 +68,7 @@ export default function ProductDetailScreen() {
   const [alertEnabled, setAlertEnabled] = useState(false);
 
   const scrollY = useSharedValue(0);
+  const heartScale = useSharedValue(1);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -91,6 +94,10 @@ export default function ProductDetailScreen() {
 
   const headerOpacityStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [HERO_HEIGHT - 100, HERO_HEIGHT - 50], [0, 1], Extrapolation.CLAMP),
+  }));
+
+  const heartAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
   }));
 
   const fetchProduct = async () => {
@@ -188,20 +195,33 @@ export default function ProductDetailScreen() {
     getSimilarProducts(String(product.id), 8).length > 0
       ? getSimilarProducts(String(product.id), 8)
       : getProductsByCategory(product.category, 8);
-  const isSaved = watchlist.some((item) => item.productId === product.upc);
+  // Check BOTH product.id and product.upc — older entries may have been stored
+  // with productId = product.upc; new ones use product.id. This keeps the heart
+  // synced regardless of which screen added the item.
+  const isSaved = watchlist.some(
+    (item) => item.productId === String(product.id) || item.productId === product.upc
+  );
 
   const handleWatchlistToggle = async () => {
+    // Spring animation: 1 → 1.3 → 1
+    heartScale.value = withSequence(
+      withSpring(1.3, { damping: 4, stiffness: 300 }),
+      withSpring(1, { damping: 10, stiffness: 200 })
+    );
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (isSaved) {
-      const watchlistItem = watchlist.find((item) => item.productId === product.upc);
+      const watchlistItem = watchlist.find(
+        (item) => item.productId === String(product.id) || item.productId === product.upc
+      );
       if (watchlistItem) removeFromWatchlist(watchlistItem.id);
       return;
     }
 
     addToWatchlist({
-      id: `watch_${Date.now()}`,
-      productId: product.upc,
+      id: `watch_${product.id}_${Date.now()}`,
+      productId: String(product.id),   // standardized to string key, NOT upc
       name: product.name,
       brand: product.brand,
       image: product.image,
@@ -323,7 +343,9 @@ export default function ProductDetailScreen() {
                 isSaved ? "bg-[#4ADE80]/10 border-[#4ADE80]/30" : "bg-white/5 border-white/5"
               }`}
             >
-              <Heart size={18} color={isSaved ? "#4ADE80" : "white"} fill={isSaved ? "#4ADE80" : "transparent"} />
+              <Animated.View style={heartAnimStyle}>
+                <Heart size={18} color={isSaved ? "#4ADE80" : "white"} fill={isSaved ? "#4ADE80" : "transparent"} />
+              </Animated.View>
               <Text className={`font-bold text-sm ${isSaved ? "text-[#4ADE80]" : "text-white"}`}>
                 {isSaved ? "Saved" : "Save"}
               </Text>

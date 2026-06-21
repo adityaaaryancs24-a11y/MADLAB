@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { AppState, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
 
 interface AppContextType extends AppState {
+  isReady: boolean;
   addToHistory: (item: ScanHistoryItem) => void;
   removeFromHistory: (id: string) => void;
   clearHistory: () => void;
@@ -183,6 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     setScanHistory([]);
     setWatchlist([]);
+    setSearchHistory([]);
     setSettings(defaultSettings);
     AsyncStorage.clear();
   };
@@ -215,6 +217,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     setScanHistory([]);
     setWatchlist([]);
+    setSearchHistory([]);
     setSettings(defaultSettings);
     AsyncStorage.clear();
   };
@@ -229,6 +232,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     watchlist,
     settings,
     isAuthenticated,
+    isReady,
     searchHistory,
     addToHistory,
     removeFromHistory,

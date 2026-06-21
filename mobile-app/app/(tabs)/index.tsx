@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -35,6 +35,15 @@ export default function ScannerScreen() {
   const [manualInputVisible, setManualInputVisible] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
+
+  // Auto-request camera permission on first mount if status is undetermined.
+  // On Android the system dialog must be triggered proactively — do NOT wait
+  // for the user to tap a button inside the app first.
+  useEffect(() => {
+    if (permission && permission.status === 'undetermined') {
+      requestPermission();
+    }
+  }, [permission]);
 
   const handleProductFound = useCallback(
     (product: BackendProduct) => {
