@@ -28,7 +28,7 @@ export const products: Product[] = [
     upc: "8901765126122",
     name: "Hauser XO Ball Pen Blue",
     brand: "Hauser",
-    image: "https://m.media-amazon.com/images/I/61sLt7Hf7SL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=800&q=80",
     description:
       "Smooth writing blue ball pen with a comfortable grip and reliable ink flow for daily notes, school, and office use.",
     category: "Stationery",
@@ -50,7 +50,7 @@ export const products: Product[] = [
     upc: "8906095062653",
     name: "Hauser XO Ball Pen Blue",
     brand: "Hauser",
-    image: "https://m.media-amazon.com/images/I/61sLt7Hf7SL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=800&q=80",
     description:
       "Smooth writing blue ball pen with a comfortable grip and reliable ink flow for daily notes, school, and office use.",
     category: "Stationery",
@@ -72,7 +72,7 @@ export const products: Product[] = [
     upc: "8902519010124",
     name: "Classmate Notebook Single Line 172 Pages",
     brand: "Classmate",
-    image: "https://m.media-amazon.com/images/I/71u8ZRDCVoL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=800&q=80",
     description:
       "Single line notebook with quality paper, durable binding, and ruled pages for school, college, and office writing.",
     category: "Stationery",
@@ -94,7 +94,7 @@ export const products: Product[] = [
     upc: "8906021112105",
     name: "Classmate Notebook Single Line 172 Pages",
     brand: "Classmate",
-    image: "https://m.media-amazon.com/images/I/71u8ZRDCVoL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=800&q=80",
     description:
       "Single line notebook with quality paper, durable binding, and ruled pages for school, college, and office writing.",
     category: "Stationery",
@@ -116,7 +116,7 @@ export const products: Product[] = [
     upc: "8901058844510",
     name: "Maggi 2-Minute Masala Noodles 70g",
     brand: "Maggi",
-    image: "https://m.media-amazon.com/images/I/81tioCUVf4L._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1612966608967-312ba599102e?w=800&q=80",
     description:
       "Classic masala instant noodles with the familiar Maggi tastemaker, ready in minutes for a quick snack or light meal.",
     category: "Instant Food",
@@ -138,7 +138,7 @@ export const products: Product[] = [
     upc: "8901058895147",
     name: "KitKat 4 Finger Chocolate Bar 37.3g",
     brand: "Nestle",
-    image: "https://m.media-amazon.com/images/I/61l4BBZ3iDL._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1618359057855-ac7bc5b01366?w=800&q=80",
     description:
       "Crisp wafer fingers covered in smooth milk chocolate, packed as a convenient treat for breaks and snacking.",
     category: "Chocolate",
@@ -160,7 +160,7 @@ export const products: Product[] = [
     upc: "8901764016812",
     name: "Coca-Cola Original Taste 750ml",
     brand: "Coca-Cola",
-    image: "https://m.media-amazon.com/images/I/51v8nyxSOYL._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80",
     description:
       "Refreshing carbonated soft drink with the classic Coca-Cola taste, best served chilled with snacks or meals.",
     category: "Beverages",
@@ -182,7 +182,7 @@ export const products: Product[] = [
     upc: "8901491101870",
     name: "Pepsi PET Bottle 750ml",
     brand: "Pepsi",
-    image: "https://m.media-amazon.com/images/I/61WFNqf8hVL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1546695259-ad30ff3fd643?w=800&q=80",
     description:
       "Bold and fizzy cola-flavoured soft drink in a resealable bottle, made for chilled refreshment on the go.",
     category: "Beverages",
@@ -204,7 +204,7 @@ export const products: Product[] = [
     upc: "8901233021309",
     name: "Cadbury Dairy Milk Chocolate 36g",
     brand: "Cadbury",
-    image: "https://m.media-amazon.com/images/I/61aJc0zjXQL._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1511381939415-e44015466834?w=800&q=80",
     description:
       "Creamy milk chocolate bar with the classic Cadbury Dairy Milk taste, suited for gifting, sharing, or a quick sweet bite.",
     category: "Chocolate",
@@ -226,7 +226,7 @@ export const products: Product[] = [
     upc: "8901491101832",
     name: "Lay's India's Magic Masala Chips 52g",
     brand: "Lay's",
-    image: "https://m.media-amazon.com/images/I/71rGPqLTHSL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1566478989037-eec170784d20?w=800&q=80",
     description:
       "Crispy potato chips seasoned with tangy and spicy India's Magic Masala flavour for a crunchy snack.",
     category: "Snacks",
@@ -248,7 +248,7 @@ export const products: Product[] = [
     upc: "8901491104055",
     name: "Doritos Nacho Cheese Tortilla Chips 55g",
     brand: "Doritos",
-    image: "https://m.media-amazon.com/images/I/81eTsCBbAHL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1518047601542-79f18c655718?w=800&q=80",
     description:
       "Crunchy tortilla chips with bold nacho cheese seasoning, made for snacking, sharing, and pairing with dips.",
     category: "Snacks",
@@ -270,7 +270,7 @@ export const products: Product[] = [
     upc: "8901058855202",
     name: "Nescafe Classic Instant Coffee 45g",
     brand: "Nescafe",
-    image: "https://m.media-amazon.com/images/I/71aKQyB3oUL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&q=80",
     description:
       "Rich and aromatic instant coffee made from carefully roasted coffee beans for a quick hot or cold coffee.",
     category: "Beverages",
@@ -292,7 +292,7 @@ export const products: Product[] = [
     upc: "8901052002244",
     name: "Tata Salt Iodized 1kg",
     brand: "Tata",
-    image: "https://m.media-amazon.com/images/I/61N+p+aNfFL._SL1500_.jpg",
+    image: require("../assets/images/tata_salt.png") as any,
     description: "Tata Salt is vacuum evaporated iodized salt. It contains the correct amount of iodine required for mental development and physical health.",
     category: "Grocery",
     prices: [
@@ -300,6 +300,8 @@ export const products: Product[] = [
       { store: "Flipkart", price: 27, url: retailerUrls.Flipkart },
       { store: "Blinkit", price: 28, url: retailerUrls.Blinkit },
       { store: "BigBasket", price: 28, url: retailerUrls.BigBasket },
+      { store: "Zepto", price: 28, url: "https://zeptonow.com" },
+      { store: "DMart Ready", price: 26, url: "https://dmart.in" },
     ],
     priceHistory: [
       { date: "2026-05-05", price: 28 },
@@ -313,7 +315,7 @@ export const products: Product[] = [
     upc: "8901030875707",
     name: "Surf Excel Easy Wash Detergent Powder 1kg",
     brand: "Surf Excel",
-    image: "https://m.media-amazon.com/images/I/61G+h2pS6jL._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80",
     description: "Surf Excel Easy Wash has the power of 10 hands, removing tough stains easily in the bucket itself with minimal scrubbing.",
     category: "Household",
     prices: [
@@ -334,7 +336,7 @@ export const products: Product[] = [
     upc: "8901725181220",
     name: "Aashirvaad Shudh Chakki Atta 5kg",
     brand: "Aashirvaad",
-    image: "https://m.media-amazon.com/images/I/81k3y6+qL9L._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?w=800&q=80",
     description: "100% pure chakki whole wheat flour. Soft, clean, and nutritious wheat flour for making soft rotis and chapatis.",
     category: "Grocery",
     prices: [
@@ -355,7 +357,7 @@ export const products: Product[] = [
     upc: "8901262010012",
     name: "Amul Butter 500g",
     brand: "Amul",
-    image: "https://m.media-amazon.com/images/I/61wL9y4GgFL._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=800&q=80",
     description: "Delicious salted table butter made from the finest fresh milk. Pure, nutritious, and perfect for spreads, baking, and cooking.",
     category: "Dairy",
     prices: [
@@ -376,7 +378,7 @@ export const products: Product[] = [
     upc: "8901063142144",
     name: "Britannia Good Day Cashew Cookies 200g",
     brand: "Britannia",
-    image: "https://m.media-amazon.com/images/I/71c6t4kRzFL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&q=80",
     description: "Crunchy cookies packed with real rich cashews and butter, delivering a delightful melt-in-mouth cookie experience.",
     category: "Snacks",
     prices: [
@@ -397,7 +399,7 @@ export const products: Product[] = [
     upc: "8901396328518",
     name: "Dettol Liquid Handwash Refill 175ml",
     brand: "Dettol",
-    image: "https://m.media-amazon.com/images/I/61jC1Gv23AL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
     description: "Germ Protection Liquid Handwash Refill. Protects from a wide range of unseen germs, leaving hands clean and fresh.",
     category: "Household",
     prices: [
@@ -418,7 +420,7 @@ export const products: Product[] = [
     upc: "8901030653630",
     name: "Brooke Bond Taj Mahal Tea 250g",
     brand: "Brooke Bond",
-    image: "https://m.media-amazon.com/images/I/61qH+W0-9tL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&q=80",
     description: "Premium black tea blend selected from high-quality Assam leaves. Offers a rich taste, strong color, and signature aroma.",
     category: "Beverages",
     prices: [
@@ -439,7 +441,7 @@ export const products: Product[] = [
     upc: "8906007282717",
     name: "Fortune Kachi Ghani Mustard Oil 1L",
     brand: "Fortune",
-    image: "https://m.media-amazon.com/images/I/61F2K71hN2L._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80",
     description: "Pure Kachi Ghani Mustard Oil made from premium mustard seeds. Rich in Omega 3 and perfect for aromatic Indian cooking.",
     category: "Grocery",
     prices: [
@@ -460,7 +462,7 @@ export const products: Product[] = [
     upc: "8901138836054",
     name: "Colgate Strong Teeth Anticavity Toothpaste 500g",
     brand: "Colgate",
-    image: "https://m.media-amazon.com/images/I/617D5+9XjHL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=800&q=80",
     description: "Colgate Strong Teeth keeps your teeth healthy and strong by adding natural calcium. It helps prevent cavities and freshens breath.",
     category: "Beauty",
     prices: [
@@ -481,7 +483,7 @@ export const products: Product[] = [
     upc: "8901030753064",
     name: "Vim Lemon Dishwash Liquid Gel 500ml",
     brand: "Vim",
-    image: "https://m.media-amazon.com/images/I/51rPqHlR76L._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1585832770485-e68a5dbfad52?w=800&q=80",
     description: "Vim Dishwash Gel with the power of 100 lemons cleans grease easily, leaving utensils sparkling and fresh without leaving white residue.",
     category: "Household",
     prices: [
@@ -502,7 +504,7 @@ export const products: Product[] = [
     upc: "8904063200150",
     name: "Haldiram's Bhujia Sev 350g",
     brand: "Haldiram's",
-    image: "https://m.media-amazon.com/images/I/818Z+6K154L._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=800&q=80",
     description: "Crispy and spicy tepary bean and chickpea flour noodle snacks. Perfect tea-time companion or snack.",
     category: "Snacks",
     prices: [
@@ -523,7 +525,7 @@ export const products: Product[] = [
     upc: "8901163100069",
     name: "Parle-G Glucose Biscuits 250g",
     brand: "Parle",
-    image: "https://m.media-amazon.com/images/I/511cW5eXG9L._SL1000_.jpg",
+    image: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=800&q=80",
     description: "The world's largest selling biscuit. Filled with the goodness of milk and wheat, providing instant energy and sweet taste.",
     category: "Snacks",
     prices: [
@@ -544,7 +546,7 @@ export const products: Product[] = [
     upc: "8906023241032",
     name: "Catch Coriander Powder 100g",
     brand: "Catch",
-    image: "https://m.media-amazon.com/images/I/61O2N8a1kSL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80",
     description: "Finely ground coriander powder sourced from the best farms. Adds a pleasant aroma and mild flavor to all Indian dishes.",
     category: "Grocery",
     prices: [
@@ -565,7 +567,7 @@ export const products: Product[] = [
     upc: "8901207040432",
     name: "Dabur Honey 500g",
     brand: "Dabur",
-    image: "https://m.media-amazon.com/images/I/61nE+H5t29L._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80",
     description: "100% pure honey sourced from natural hives. Helps in digestion, boosts immunity, and serves as a healthy replacement for sugar.",
     category: "Grocery",
     prices: [
@@ -586,7 +588,7 @@ export const products: Product[] = [
     upc: "8901058862804",
     name: "Maggi Hot & Sweet Tomato Chilli Sauce 1kg",
     brand: "Maggi",
-    image: "https://m.media-amazon.com/images/I/71uV4R8s1VL._SL1500_.jpg",
+    image: "https://images.unsplash.com/photo-1607330289024-1535c6b4e1c1?w=800&q=80",
     description: "Classic hot and sweet tomato chilli sauce. Perfect dip for samosas, pakoras, noodles, and other snacks.",
     category: "Grocery",
     prices: [
@@ -601,6 +603,27 @@ export const products: Product[] = [
       { date: "2026-05-19", price: 172 },
       { date: "2026-05-26", price: 160 },
       { date: "2026-06-02", price: 165 },
+    ],
+  },
+  {
+    upc: "8901491100519",
+    name: "Kurkure Masala Munch 90g",
+    brand: "Kurkure",
+    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=800&q=80",
+    description: "Kurkure is a crunchy, new-age Pack namkeen snack brand which symbolizes light-hearted fun. Made with trusted kitchen ingredients, 100% vegetarian.",
+    category: "Grocery",
+    prices: [
+      { store: "Blinkit", price: 20, url: "https://blinkit.com" },
+      { store: "DMart Ready", price: 18, url: "https://dmart.in" },
+      { store: "BigBasket", price: 19, url: "https://bigbasket.com" },
+      { store: "Zepto", price: 20, url: "https://zeptonow.com" },
+    ],
+    priceHistory: [
+      { date: "2026-05-05", price: 20 },
+      { date: "2026-05-12", price: 20 },
+      { date: "2026-05-19", price: 19 },
+      { date: "2026-05-26", price: 18 },
+      { date: "2026-06-02", price: 20 },
     ],
   },
 ];

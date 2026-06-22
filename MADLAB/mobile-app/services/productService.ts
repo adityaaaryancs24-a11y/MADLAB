@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "react-native";
 import { DemoProduct, findDemoProductByUPC } from "../data/demoProducts";
 import { findProductByUPC, Product as LocalProduct } from "../data/products";
 import {
@@ -8,8 +9,43 @@ import {
   mockProducts,
   predictPrice,
 } from "../src/utils/mockData";
-import type { Product } from "../src/types";
+import type { Product, PriceInfo } from "../src/types";
 import { fetchClient } from "./api";
+
+const STORE_LOGOS: Record<string, string> = {
+  amazon: "https://logo.clearbit.com/amazon.in",
+  flipkart: "https://logo.clearbit.com/flipkart.com",
+  blinkit: "https://logo.clearbit.com/blinkit.com",
+  bigbasket: "https://logo.clearbit.com/bigbasket.com",
+  zepto: "https://logo.clearbit.com/zeptonow.com",
+  dmart: "https://logo.clearbit.com/dmart.in",
+  reliance: "https://logo.clearbit.com/reliancedigital.in",
+  tatacliq: "https://logo.clearbit.com/tatacliq.com",
+};
+
+function getStoreLogo(storeName: string): string | undefined {
+  const nameLower = storeName.toLowerCase();
+  for (const [key, url] of Object.entries(STORE_LOGOS)) {
+    if (nameLower.includes(key)) {
+      return url;
+    }
+  }
+  return undefined;
+}
+
+function getProductImage(img: any): string {
+  if (!img) return PLACEHOLDER_IMAGE;
+  if (typeof img === "string" && img.startsWith("http")) return img;
+  if (typeof img === "number" || (typeof img === "object" && img !== null)) {
+    try {
+      const resolved = Image.resolveAssetSource(img);
+      return resolved ? resolved.uri : PLACEHOLDER_IMAGE;
+    } catch {
+      return PLACEHOLDER_IMAGE;
+    }
+  }
+  return PLACEHOLDER_IMAGE;
+}
 
 export interface ProductPrice {
   id: number;
@@ -114,25 +150,41 @@ async function withRetry<T>(task: () => Promise<T>, attempts = 2): Promise<T> {
   throw lastError instanceof Error ? lastError : new Error("Lookup failed");
 }
 
-function normalizePrices(productId: string, prices = getMockPrices(productId)): ProductPrice[] {
-  return prices
+function normalizePrices(
+  productId: string, 
+  prices?: PriceInfo[], 
+  category?: string, 
+  name?: string
+): ProductPrice[] {
+  const finalPrices = prices ?? getMockPrices(productId, category, name);
+  return finalPrices
     .filter((price) => price.price !== null && !price.isInput)
-    .map((price, index) => ({
-      id: index + 1,
-      retailer: price.store,
-      store: price.store,
-      price: Number(price.price ?? 0),
-      in_stock: price.stock !== "Out of Stock",
-      stock: price.stock,
-      logo: price.logo,
-      url: price.url,
-      updated_at: price.lastUpdated ?? new Date().toISOString(),
-    }))
+    .map((price, index) => {
+      const resolvedLogo = price.logo && (price.logo.startsWith("http") || price.logo.startsWith("file"))
+        ? price.logo
+        : getStoreLogo(price.store);
+
+      return {
+        id: index + 1,
+        retailer: price.store,
+        store: price.store,
+        price: Number(price.price ?? 0),
+        in_stock: price.stock !== "Out of Stock",
+        stock: price.stock,
+        logo: resolvedLogo,
+        url: price.url,
+        updated_at: price.lastUpdated ?? new Date().toISOString(),
+      };
+    })
     .sort((a, b) => a.price - b.price);
 }
 
-function normalizeHistory(productId: string): PriceHistoryPoint[] {
-  return generatePriceHistory(30, productId).map((point, index) => ({
+function normalizeHistory(
+  productId: string, 
+  category?: string, 
+  name?: string
+): PriceHistoryPoint[] {
+  return generatePriceHistory(30, productId, category, name).map((point, index) => ({
     id: index + 1,
     price: point.price,
     store: "Best retailer",
@@ -188,18 +240,29 @@ function localProductToBackendProduct(product: LocalProduct): BackendProduct {
       price: price.price,
       in_stock: true,
       stock: "In Stock",
+      logo: getStoreLogo(price.store),
       url: price.url,
       updated_at: new Date().toISOString(),
     }))
     .sort((a, b) => a.price - b.price);
 
-  const priceHistory = product.priceHistory.map((point, index) => ({
-    id: index + 1,
-    price: point.price,
-    store: prices[0]?.store ?? "Best retailer",
-    date: point.date,
-    recorded_at: new Date(point.date).toISOString(),
-  }));
+  const totalPoints = product.priceHistory.length;
+  const priceHistory = product.priceHistory.map((point, index) => {
+    const daysAgo = Math.round(((totalPoints - 1 - index) / Math.max(1, totalPoints - 1)) * 30);
+    const dateObj = new Date();
+    dateObj.setDate(dateObj.getDate() - daysAgo);
+    const dateStr = dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    return {
+      id: index + 1,
+      price: point.price,
+      store: prices[0]?.store ?? "Best retailer",
+      date: dateStr,
+      recorded_at: dateObj.toISOString(),
+    };
+  });
+
+  const resolvedImage = getProductImage(product.image);
 
   return {
     id: product.upc,
@@ -207,8 +270,8 @@ function localProductToBackendProduct(product: LocalProduct): BackendProduct {
     name: product.name,
     brand: product.brand,
     model: product.name,
-    image: product.image || PLACEHOLDER_IMAGE,
-    image_url: product.image || PLACEHOLDER_IMAGE,
+    image: resolvedImage,
+    image_url: resolvedImage,
     description: product.description,
     category: product.category,
     rating: 4.5,
@@ -231,18 +294,29 @@ function demoProductToBackendProduct(product: DemoProduct): BackendProduct {
       price: price.price,
       in_stock: true,
       stock: "In Stock",
+      logo: getStoreLogo(price.store),
       url: price.url,
       updated_at: new Date().toISOString(),
     }))
     .sort((a, b) => a.price - b.price);
 
-  const priceHistory = product.price_history.map((point, index) => ({
-    id: index + 1,
-    price: point.price,
-    store: prices[0]?.store ?? "Best retailer",
-    date: point.date,
-    recorded_at: new Date(point.date).toISOString(),
-  }));
+  const totalPoints = product.price_history.length;
+  const priceHistory = product.price_history.map((point, index) => {
+    const daysAgo = Math.round(((totalPoints - 1 - index) / Math.max(1, totalPoints - 1)) * 30);
+    const dateObj = new Date();
+    dateObj.setDate(dateObj.getDate() - daysAgo);
+    const dateStr = dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    return {
+      id: index + 1,
+      price: point.price,
+      store: prices[0]?.store ?? "Best retailer",
+      date: dateStr,
+      recorded_at: dateObj.toISOString(),
+    };
+  });
+
+  const resolvedImage = getProductImage(product.image);
 
   return {
     id: product.upc,
@@ -250,8 +324,8 @@ function demoProductToBackendProduct(product: DemoProduct): BackendProduct {
     name: product.name,
     brand: product.brand,
     model: product.name,
-    image: product.image || PLACEHOLDER_IMAGE,
-    image_url: product.image || PLACEHOLDER_IMAGE,
+    image: resolvedImage,
+    image_url: resolvedImage,
     description: product.description,
     category: product.category,
     rating: 4.6,
@@ -270,14 +344,16 @@ function productToBackendProduct(
   source: ProductDataSource,
   warning?: string
 ): BackendProduct {
-  const prices = normalizePrices(product.id, product.prices ?? getMockPrices(product.id));
+  const prices = normalizePrices(product.id, product.prices, product.category, product.name);
   const priceHistory =
     product.priceHistory?.map((point, index) => ({
       id: index + 1,
       price: point.price,
       store: point.store,
       recorded_at: new Date(point.timestamp).toISOString(),
-    })) ?? normalizeHistory(product.id);
+    })) ?? normalizeHistory(product.id, product.category, product.name);
+
+  const resolvedImage = getProductImage(product.image);
 
   return {
     id: product.id,
@@ -285,8 +361,8 @@ function productToBackendProduct(
     name: product.name,
     brand: product.brand,
     model: product.model,
-    image: product.image || PLACEHOLDER_IMAGE,
-    image_url: product.image || PLACEHOLDER_IMAGE,
+    image: resolvedImage,
+    image_url: resolvedImage,
     description: product.description ?? `${product.name} from ${product.brand}.`,
     category: product.category ?? "General",
     rating: product.rating,

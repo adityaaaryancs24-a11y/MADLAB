@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Flashlight, FlashlightOff } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useApp } from '../../src/context/AppContext';
 
 const SCAN_FRAME_SIZE = 280;
 const CORNER_LENGTH = 40;
@@ -24,6 +25,7 @@ interface ScannerOverlayProps {
 }
 
 export function ScannerOverlay({ torchEnabled, onToggleTorch, isScanning }: ScannerOverlayProps) {
+  const { settings } = useApp();
   const lineY = useSharedValue(0);
 
   useEffect(() => {
@@ -48,7 +50,9 @@ export function ScannerOverlay({ torchEnabled, onToggleTorch, isScanning }: Scan
   });
 
   const handleTorchToggle = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (settings.hapticFeedback) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     onToggleTorch();
   };
 

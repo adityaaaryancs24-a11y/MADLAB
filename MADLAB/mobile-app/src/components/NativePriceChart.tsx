@@ -8,6 +8,7 @@ import Svg, {
   Stop,
   Circle,
   Line,
+  Text as SvgText,
 } from "react-native-svg";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -32,10 +33,7 @@ function buildSmoothPath(
 
   let d = `M${points[0].x},${points[0].y}`;
   for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const cpX = (prev.x + curr.x) / 2;
-    d += ` C${cpX},${prev.y} ${cpX},${curr.y} ${curr.x},${curr.y}`;
+    d += ` L${points[i].x},${points[i].y}`;
   }
   return d;
 }
@@ -175,7 +173,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
           borderWidth: 1,
           borderColor: "rgba(255,255,255,0.05)",
           overflow: "hidden",
-          paddingBottom: 28, // room for date labels
+          paddingBottom: 12,
         }}
       >
         <Svg width={chartWidth} height={CHART_HEIGHT}>
@@ -226,36 +224,22 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
             stroke="#0A0E15"
             strokeWidth={2}
           />
-        </Svg>
 
-        {/* Date tick labels */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 6,
-            left: 0,
-            right: 0,
-            flexDirection: "row",
-            paddingHorizontal: PADDING_H,
-          }}
-        >
+          {/* Date tick labels inside SVG */}
           {tickLabels.map((tick, i) => (
-            <Text
+            <SvgText
               key={i}
-              style={{
-                position: "absolute",
-                left: tick.x - 20,
-                color: "rgba(255,255,255,0.3)",
-                fontSize: 9,
-                fontWeight: "600",
-                width: 40,
-                textAlign: "center",
-              }}
+              x={tick.x}
+              y={CHART_HEIGHT - 6}
+              fill="rgba(255,255,255,0.3)"
+              fontSize="9"
+              fontWeight="600"
+              textAnchor="middle"
             >
               {tick.label}
-            </Text>
+            </SvgText>
           ))}
-        </View>
+        </Svg>
 
         {/* Y-axis price labels */}
         <View

@@ -498,14 +498,22 @@ export function searchProducts(query: string): Product[] {
   });
 }
 
-export function getMockPrices(productId: string): PriceInfo[] {
+export function getMockPrices(productId: string, category?: string, productName?: string): PriceInfo[] {
   const rng = new SeededRandom(getSeedFromId(productId));
 
-  // Determine pricing scale based on product category/ID
-  const isGrocery = mockProducts[productId]?.category === "Grocery";
-  const basePrice = isGrocery
-    ? rng.range(80, 750) // Groceries: ₹80 - ₹750
-    : rng.range(1200, 85000); // Electronics/Fashion/Beauty/Sports: ₹1,200 - ₹85,000
+  const nameLower = (productName || mockProducts[productId]?.name || "").toLowerCase();
+  const catLower = (category || mockProducts[productId]?.category || "").toLowerCase();
+  
+  const isGrocery = catLower.includes("grocery") || catLower.includes("food") || catLower.includes("beverage") || catLower.includes("snack") || productId.startsWith("off_") || nameLower.includes("kurkure") || nameLower.includes("salt") || nameLower.includes("noodles") || nameLower.includes("chips");
+
+  let basePrice = rng.range(1200, 85000);
+  if (isGrocery) {
+    basePrice = rng.range(10, 250);
+    // Cheap items tuning
+    if (nameLower.includes("salt") || nameLower.includes("pen") || nameLower.includes("biscuit") || nameLower.includes("noodle") || nameLower.includes("chips") || nameLower.includes("kurkure")) {
+      basePrice = rng.range(10, 60);
+    }
+  }
 
   // Standard Store Configs
   const prices: PriceInfo[] = [
@@ -519,7 +527,7 @@ export function getMockPrices(productId: string): PriceInfo[] {
     {
       store: isGrocery ? "Blinkit" : "Amazon India",
       logo: isGrocery ? "⚡" : "📦",
-      price: parseFloat((basePrice + rng.range(0, basePrice * 0.08)).toFixed(2)),
+      price: parseFloat((basePrice + rng.range(0, basePrice * 0.05)).toFixed(2)),
       stock: "In Stock",
       url: isGrocery ? "https://blinkit.com" : "https://amazon.in",
       isBest: false,
@@ -527,7 +535,7 @@ export function getMockPrices(productId: string): PriceInfo[] {
     {
       store: isGrocery ? "DMart Ready" : "Flipkart",
       logo: isGrocery ? "🏪" : "🏷️",
-      price: parseFloat((basePrice - rng.range(basePrice * 0.05, basePrice * 0.02)).toFixed(2)),
+      price: parseFloat((basePrice - rng.range(basePrice * 0.04, basePrice * 0.01)).toFixed(2)),
       stock: rng.next() > 0.1 ? "In Stock" : "Limited Stock",
       url: isGrocery ? "https://dmart.in" : "https://flipkart.com",
       isBest: false,
@@ -535,7 +543,7 @@ export function getMockPrices(productId: string): PriceInfo[] {
     {
       store: isGrocery ? "BigBasket" : "Reliance Digital",
       logo: "🏬",
-      price: parseFloat((basePrice + rng.range(-basePrice * 0.03, basePrice * 0.03)).toFixed(2)),
+      price: parseFloat((basePrice + rng.range(-basePrice * 0.02, basePrice * 0.02)).toFixed(2)),
       stock: "In Stock",
       url: isGrocery ? "https://bigbasket.com" : "https://reliancedigital.in",
       isBest: false,
@@ -543,7 +551,7 @@ export function getMockPrices(productId: string): PriceInfo[] {
     {
       store: isGrocery ? "Zepto" : "Tata CLIQ",
       logo: isGrocery ? "🍓" : "🛍️",
-      price: parseFloat((basePrice + rng.range(basePrice * 0.04, basePrice * 0.12)).toFixed(2)),
+      price: parseFloat((basePrice + rng.range(basePrice * 0.02, basePrice * 0.08)).toFixed(2)),
       stock: "In Stock",
       url: isGrocery ? "https://zeptonow.com" : "https://tatacliq.com",
       isBest: false,
@@ -579,25 +587,36 @@ export function lookupBarcode(barcode: string): Product | null {
   return mockProducts[randomId];
 }
 
-export function generatePriceHistory(days: number = 30, productId?: string): Array<{ date: string; price: number }> {
+export function generatePriceHistory(
+  days: number = 30, 
+  productId?: string, 
+  category?: string, 
+  productName?: string
+): Array<{ date: string; price: number }> {
   const history = [];
   const rng = new SeededRandom(getSeedFromId(productId || "1") + 123);
 
-  const prices = getMockPrices(productId || "1");
-  const basePrice = Math.min(...prices.filter(p => p.price !== null).map(p => p.price as number)) || 1000;
+  const prices = getMockPrices(
+    productId || "1", 
+    category || mockProducts[productId || "1"]?.category, 
+    productName || mockProducts[productId || "1"]?.name
+  );
+  const basePrice = Math.min(...prices.filter(p => p.price !== null && !p.isInput).map(p => p.price as number)) || 100;
 
+  let currentPrice = basePrice;
   for (let i = days; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
 
-    // Simulate random price fluctuation
-    const variance = (rng.next() - 0.55) * (basePrice * 0.08); // Slight downward variance
-    const trend = -i * (basePrice * 0.001); // Subtle downward drift over 30 days
-    const price = Math.max(basePrice + variance + trend, basePrice * 0.7);
+    // Occasional price changes (10% chance per day) to make a very clean stepped graph
+    if (rng.next() < 0.10) {
+      const change = (rng.next() - 0.5) * 0.05; // Change by up to +/- 2.5%
+      currentPrice = Math.max(basePrice * 0.75, Math.min(basePrice * 1.25, currentPrice * (1 + change)));
+    }
 
     history.push({
       date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      price: parseFloat(price.toFixed(2)),
+      price: parseFloat(currentPrice.toFixed(2)),
     });
   }
 

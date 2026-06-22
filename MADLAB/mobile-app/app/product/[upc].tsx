@@ -35,6 +35,7 @@ import {
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Speech from "expo-speech";
 
 import { BackendProduct, productService } from "../../services/productService";
 import { NativePriceChart } from "../../src/components/NativePriceChart";
@@ -62,6 +63,28 @@ export default function ProductDetailScreen() {
 
   const [product, setProduct] = useState<BackendProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const fontScale = settings.fontSize === "small" ? 0.88 : settings.fontSize === "large" ? 1.15 : 1.0;
+
+  // Text-To-Speech announcement for pricing
+  useEffect(() => {
+    if (product && settings.ttsEnabled) {
+      const bestPrice = product.prices?.[0];
+      const priceText = bestPrice 
+        ? `Best price is ${bestPrice.price} Rupees at ${bestPrice.store || bestPrice.retailer}`
+        : "Price is not available";
+      const textToSpeak = `${product.brand} ${product.name}. ${priceText}.`;
+      
+      Speech.speak(textToSpeak, {
+        language: "en-IN",
+        rate: 0.9,
+      });
+
+      return () => {
+        Speech.stop();
+      };
+    }
+  }, [product, settings.ttsEnabled]);
   const [error, setError] = useState<string | null>(null);
   const [alertEnabled, setAlertEnabled] = useState(false);
 
@@ -204,7 +227,9 @@ export default function ProductDetailScreen() {
   const displayPrices = filteredPrices.length > 0 ? filteredPrices : pricing.sortedPrices;
 
   const handleWatchlistToggle = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (settings.hapticFeedback) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
 
     if (isSaved) {
       const watchlistItem = watchlist.find((item) => item.productId === product.upc);
@@ -284,9 +309,8 @@ export default function ProductDetailScreen() {
             entering={FadeIn.duration(800)}
             source={{ uri: product.image }}
             style={styles.heroImage}
-            resizeMode="cover"
+            resizeMode="contain"
           />
-          <View style={styles.heroGradient} />
         </Animated.View>
 
         <View className="px-6 -mt-10 pt-8 bg-[#0A0E15] rounded-t-[40px]">
@@ -306,10 +330,10 @@ export default function ProductDetailScreen() {
           {(product.warning || product.dataSource === "mock") && (
             <Animated.View
               entering={FadeInDown.delay(80).springify()}
-              className="flex-row gap-3 bg-[#F4A261]/10 border border-[#F4A261]/20 rounded-2xl p-4 mb-5"
+              className={`flex-row gap-3 bg-[#F4A261]/10 border ${settings.highContrast ? 'border-[#F4A261]/60' : 'border-[#F4A261]/20'} rounded-2xl p-4 mb-5`}
             >
               <AlertTriangle size={18} color="#F4A261" />
-              <Text className="text-[#F4A261] text-xs font-semibold leading-5 flex-1">
+              <Text style={{ fontSize: 12 * fontScale }} className="text-[#F4A261] font-semibold leading-5 flex-1">
                 {product.warning ||
                   "Live APIs did not return this barcode. Verity is showing realistic mock data so you can continue comparing prices."}
               </Text>
@@ -318,13 +342,15 @@ export default function ProductDetailScreen() {
 
           <Animated.Text
             entering={FadeInDown.delay(100).springify()}
-            className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1"
+            style={{ fontSize: 14 * fontScale }}
+            className="text-white/60 font-bold uppercase tracking-wider mb-1"
           >
             {product.brand}
           </Animated.Text>
           <Animated.Text
             entering={FadeInDown.delay(150).springify()}
-            className="text-white text-3xl font-black leading-tight mb-8"
+            style={{ fontSize: 30 * fontScale }}
+            className="text-white font-black leading-tight mb-8"
           >
             {product.name}
           </Animated.Text>
@@ -333,25 +359,31 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               onPress={handleWatchlistToggle}
               className={`flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2 ${
-                isSaved ? "bg-[#4ADE80]/10 border-[#4ADE80]/30" : "bg-white/5 border-white/5"
+                isSaved 
+                  ? (settings.highContrast ? "bg-[#4ADE80]/15 border-[#4ADE80]/60" : "bg-[#4ADE80]/10 border-[#4ADE80]/30") 
+                  : (settings.highContrast ? "bg-white/5 border-white/35" : "bg-white/5 border-white/5")
               }`}
             >
               <Heart size={18} color={isSaved ? "#4ADE80" : "white"} fill={isSaved ? "#4ADE80" : "transparent"} />
-              <Text className={`font-bold text-sm ${isSaved ? "text-[#4ADE80]" : "text-white"}`}>
+              <Text style={{ fontSize: 14 * fontScale }} className={`font-bold ${isSaved ? "text-[#4ADE80]" : "text-white"}`}>
                 {isSaved ? "Saved" : "Save"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (settings.hapticFeedback) {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
                 setAlertEnabled((enabled) => !enabled);
               }}
               className={`flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2 ${
-                alertEnabled ? "bg-[#4ADE80] border-[#4ADE80]" : "bg-white/5 border-white/5"
+                alertEnabled 
+                  ? "bg-[#4ADE80] border-[#4ADE80]" 
+                  : (settings.highContrast ? "bg-white/5 border-white/35" : "bg-white/5 border-white/5")
               }`}
             >
               <Bell size={18} color={alertEnabled ? "#0A0E15" : "white"} fill={alertEnabled ? "#0A0E15" : "transparent"} />
-              <Text className={`font-bold text-sm ${alertEnabled ? "text-[#0A0E15]" : "text-white"}`}>Alerts</Text>
+              <Text style={{ fontSize: 14 * fontScale }} className={`font-bold ${alertEnabled ? "text-[#0A0E15]" : "text-white"}`}>Alerts</Text>
             </TouchableOpacity>
           </Animated.View>
 
@@ -360,24 +392,24 @@ export default function ProductDetailScreen() {
               entering={FadeInDown.delay(250).springify()}
               className="bg-[#4ADE80] rounded-3xl p-1 mb-8 shadow-lg shadow-[#4ADE80]/20"
             >
-              <View className="bg-[#0A0E15] rounded-[22px] p-5">
+              <View className={`bg-[#0A0E15] rounded-[22px] p-5 ${settings.highContrast ? 'border border-[#4ADE80]' : ''}`}>
                 <View className="flex-row justify-between items-start mb-4 gap-4">
                   <View className="flex-1">
                     <View className="flex-row items-center gap-1.5 mb-1.5">
                       <Tag size={14} color="#4ADE80" />
-                      <Text className="text-[#4ADE80] font-black text-xs uppercase tracking-wider">
+                      <Text style={{ fontSize: 12 * fontScale }} className="text-[#4ADE80] font-black uppercase tracking-wider">
                         Best Price Found
                       </Text>
                     </View>
-                    <Text className="text-white text-3xl font-black">{formatCurrency(pricing.lowestPrice)}</Text>
+                    <Text style={{ fontSize: 30 * fontScale }} className="text-white font-black">{formatCurrency(pricing.lowestPrice)}</Text>
                   </View>
                   <View className="items-end flex-1">
-                    <Text className="text-white/40 text-xs font-semibold mb-1" numberOfLines={1}>
+                    <Text style={{ fontSize: 12 * fontScale }} className="text-white/40 font-semibold mb-1" numberOfLines={1}>
                       at {pricing.bestPrice?.store ?? pricing.bestPrice?.retailer ?? "Verity"}
                     </Text>
                     {pricing.maxSavings > 0 && (
                       <View className="bg-[#4ADE80]/20 px-2 py-1 rounded-md">
-                        <Text className="text-[#4ADE80] font-bold text-xs">
+                        <Text style={{ fontSize: 12 * fontScale }} className="text-[#4ADE80] font-bold">
                           Save {pricing.savingsPercent.toFixed(0)}%
                         </Text>
                       </View>
@@ -389,7 +421,7 @@ export default function ProductDetailScreen() {
                     onPress={() => Linking.openURL(pricing.bestPrice!.url!)}
                     className="w-full bg-[#4ADE80] py-3.5 rounded-xl items-center"
                   >
-                    <Text className="text-[#0A0E15] font-black text-sm uppercase tracking-wide">Buy Now</Text>
+                    <Text style={{ fontSize: 14 * fontScale }} className="text-[#0A0E15] font-black uppercase tracking-wide">Buy Now</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -398,7 +430,7 @@ export default function ProductDetailScreen() {
 
           {displayPrices.length > 1 && (
             <Animated.View entering={FadeInDown.delay(300).springify()} className="mb-8">
-              <Text className="text-white/60 font-bold text-xs uppercase tracking-wider mb-4 px-1">
+              <Text style={{ fontSize: 12 * fontScale }} className="text-white/60 font-bold uppercase tracking-wider mb-4 px-1">
                 Other Retailers
               </Text>
               <View className="gap-3">
@@ -406,7 +438,7 @@ export default function ProductDetailScreen() {
                   <TouchableOpacity
                     key={`${priceOption.store}-${priceOption.price}`}
                     onPress={() => priceOption.url && Linking.openURL(priceOption.url)}
-                    className="w-full flex-row items-center justify-between p-4 bg-[#111827] border border-white/5 rounded-2xl"
+                    className={`w-full flex-row items-center justify-between p-4 bg-[#111827] border ${settings.highContrast ? 'border-white/35' : 'border-white/5'} rounded-2xl`}
                   >
                     <View className="flex-row items-center gap-3 flex-1">
                       <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
@@ -421,11 +453,12 @@ export default function ProductDetailScreen() {
                         )}
                       </View>
                       <View className="flex-1">
-                        <Text className="text-white font-bold text-sm" numberOfLines={1}>
+                        <Text style={{ fontSize: 14 * fontScale }} className="text-white font-bold" numberOfLines={1}>
                           {priceOption.store || priceOption.retailer}
                         </Text>
                         <Text
-                          className={`text-xs mt-0.5 font-medium ${
+                          style={{ fontSize: 12 * fontScale }}
+                          className={`mt-0.5 font-medium ${
                             priceOption.stock === "Out of Stock" || !priceOption.in_stock
                               ? "text-red-400"
                               : "text-white/40"
@@ -435,7 +468,7 @@ export default function ProductDetailScreen() {
                         </Text>
                       </View>
                     </View>
-                    <Text className="font-bold text-base text-white ml-3">{formatCurrency(priceOption.price)}</Text>
+                    <Text style={{ fontSize: 16 * fontScale }} className="font-bold text-white ml-3">{formatCurrency(priceOption.price)}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -528,13 +561,13 @@ export default function ProductDetailScreen() {
           {product.description && (
             <Animated.View
               entering={FadeInDown.delay(350).springify()}
-              className="bg-[#111827] border border-white/5 rounded-3xl p-6 mb-8"
+              className={`bg-[#111827] border ${settings.highContrast ? 'border-white/35' : 'border-white/5'} rounded-3xl p-6 mb-8`}
             >
               <View className="flex-row items-center gap-2 mb-3">
                 <Info size={16} color="#4ADE80" />
-                <Text className="text-white font-bold text-sm">About this item</Text>
+                <Text style={{ fontSize: 14 * fontScale }} className="text-white font-bold">About this item</Text>
               </View>
-              <Text className="text-white/60 text-sm leading-relaxed font-medium">{product.description}</Text>
+              <Text style={{ fontSize: 14 * fontScale }} className="text-white/60 leading-relaxed font-medium">{product.description}</Text>
             </Animated.View>
           )}
         </View>
@@ -551,7 +584,10 @@ const styles = StyleSheet.create({
   heroContainer: {
     height: HERO_HEIGHT,
     width,
-    backgroundColor: "white",
+    backgroundColor: "#111827",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
   },
   heroImage: {
     width: "100%",

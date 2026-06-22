@@ -22,7 +22,7 @@ import { useBarcodeLookup } from "../../hooks/useBarcodeLookup";
 const SCAN_LOCK_MS = 2000;
 
 export default function ScannerScreen() {
-  const { addToHistory } = useApp();
+  const { addToHistory, settings } = useApp();
   const [permission, requestPermission] = useCameraPermissions();
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [scanLocked, setScanLocked] = useState(false);
@@ -63,7 +63,9 @@ export default function ScannerScreen() {
     setScanLocked(true);
 
     try {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (settings.hapticFeedback) {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     } catch {
       // Haptics are optional on some devices and simulators.
     }

@@ -13,7 +13,7 @@ interface WishlistCardProps {
 
 export function WishlistCard({ item, showToast }: WishlistCardProps) {
   const router = useRouter();
-  const { removeFromWatchlist, updateWatchlistItem } = useApp();
+  const { removeFromWatchlist, updateWatchlistItem, settings } = useApp();
   const isManualProduct = item.productId && typeof item.productId === 'string' ? item.productId.startsWith('manual_') : false;
 
   // Defensive sanitization of product fields
@@ -123,7 +123,8 @@ export function WishlistCard({ item, showToast }: WishlistCardProps) {
       <View className="flex-row items-center h-full pb-4">
         <TouchableOpacity
           onPress={handleSetTarget}
-          className="bg-[#F4A261] justify-center items-center w-16 h-full ml-2 rounded-2xl"
+          style={{ backgroundColor: '#F4A261' }}
+          className="justify-center items-center w-16 h-full ml-2 rounded-2xl"
         >
           <Bell size={24} color="#0A0E15" />
         </TouchableOpacity>
@@ -137,6 +138,8 @@ export function WishlistCard({ item, showToast }: WishlistCardProps) {
     );
   };
 
+  const fontScale = settings.fontSize === 'small' ? 0.88 : settings.fontSize === 'large' ? 1.15 : 1.0;
+
   return (
     <>
       <Swipeable renderRightActions={renderRightActions}>
@@ -149,40 +152,40 @@ export function WishlistCard({ item, showToast }: WishlistCardProps) {
             }
             router.push(`/product/${item.productId}`);
           }}
-          className="w-full bg-white/5 border border-white/10 rounded-3xl p-4 mb-4 relative"
+          className={`w-full bg-white/5 border ${settings.highContrast ? 'border-white/35' : 'border-white/10'} rounded-3xl p-4 mb-4 relative`}
         >
           {isPriceDropped && (
             <View className="absolute top-4 right-4 z-10 px-2 py-1 bg-[#2ECC71] rounded-lg flex-row items-center gap-1 shadow-lg">
               <TrendingDown size={12} color="#0A0E15" strokeWidth={3} />
-              <Text className="text-[10px] font-bold text-[#0A0E15]">
+              <Text style={{ fontSize: 10 * fontScale }} className="font-bold text-[#0A0E15]">
                 {priceDropPercent.toFixed(1)}% Drop
               </Text>
             </View>
           )}
 
           <View className="flex-row items-center">
-            <View className="w-24 h-24 rounded-2xl bg-white/10 p-2 overflow-hidden border border-white/10">
+            <View className={`w-20 h-20 rounded-2xl bg-white/10 p-2 overflow-hidden border ${settings.highContrast ? 'border-white/35' : 'border-white/10'} justify-center items-center`}>
               <Image
                 source={{ uri: item.image || 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500' }}
-                className="w-full h-full"
+                style={{ width: '100%', height: '100%' }}
                 resizeMode="contain"
               />
             </View>
             
             <View className="flex-1 ml-4 justify-center">
-              <Text className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-1">
+              <Text style={{ fontSize: 10 * fontScale }} className="font-bold text-white/50 uppercase tracking-wider mb-1">
                 {item.brand || 'General'}
               </Text>
-              <Text className="text-white font-semibold text-sm mb-2" numberOfLines={2}>
+              <Text style={{ fontSize: 14 * fontScale }} className="text-white font-semibold mb-2" numberOfLines={2}>
                 {item.name || 'Unnamed Product'}
               </Text>
               
               <View className="flex-row items-end gap-2">
-                <Text className="text-[#2ECC71] font-bold text-xl">
+                <Text style={{ fontSize: 20 * fontScale }} className="text-[#2ECC71] font-bold">
                   ₹{currentPrice.toFixed(2)}
                 </Text>
                 {previousPrice > currentPrice && (
-                  <Text className="text-white/40 text-xs line-through mb-1">
+                  <Text style={{ fontSize: 12 * fontScale }} className="text-white/40 line-through mb-1">
                     ₹{previousPrice.toFixed(2)}
                   </Text>
                 )}
@@ -192,13 +195,13 @@ export function WishlistCard({ item, showToast }: WishlistCardProps) {
 
           <View className="mt-2.5 pt-2 border-t border-white/[0.03] flex-row justify-between items-center">
             {targetPrice !== undefined ? (
-              <Text className="text-[10px] text-[#F4A261] font-semibold">
+              <Text style={{ fontSize: 10 * fontScale }} className="text-[#F4A261] font-semibold">
                 Alert set at ₹{targetPrice.toFixed(2)} ({Math.round(((currentPrice - targetPrice) / currentPrice) * 100)}% drop)
               </Text>
             ) : (
               <View />
             )}
-            <Text className="text-[10px] text-white/25 italic">Swipe left to edit or delete</Text>
+            <Text style={{ fontSize: 10 * fontScale }} className="text-white/25 italic">Swipe left to edit or delete</Text>
           </View>
         </TouchableOpacity>
       </Swipeable>

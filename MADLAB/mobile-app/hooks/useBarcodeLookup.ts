@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { BackendProduct, productService } from "../services/productService";
+import { useApp } from "../src/context/AppContext";
 
 /** Strip non-digits so manual entry and camera scans match DB UPCs. */
 export function normalizeBarcode(raw: unknown): string {
@@ -14,6 +15,7 @@ interface UseBarcodeLookupOptions {
 
 export function useBarcodeLookup(options: UseBarcodeLookupOptions = {}) {
   const { onProductFound } = options;
+  const { settings } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -54,7 +56,9 @@ export function useBarcodeLookup(options: UseBarcodeLookupOptions = {}) {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       setLoadingStep(3);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (settings.hapticFeedback) {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
       await new Promise((resolve) => setTimeout(resolve, 400));
 
       setIsLoading(false);
@@ -71,7 +75,9 @@ export function useBarcodeLookup(options: UseBarcodeLookupOptions = {}) {
       const message =
         error instanceof Error ? error.message : "Product not found for this barcode.";
       setLoadingError(message);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (settings.hapticFeedback) {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
 
       setTimeout(() => {
         setIsLoading(false);
