@@ -44,6 +44,13 @@ export interface ScanHistoryItem {
 export interface WatchlistItem {
   id: string;
   productId: string;
+  /**
+   * The scannable barcode (UPC/EAN) for this product.
+   * Used to navigate to /product/[upc] when tapping the card.
+   * For manually-entered products this may be empty string or the
+   * user-supplied UPC (if any).
+   */
+  upc: string;
   name: string;
   brand: string;
   image: string;
