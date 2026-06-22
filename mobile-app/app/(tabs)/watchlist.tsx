@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, TextInput, Alert } from 'react-native';
 import { Heart, Plus, X, Save, IndianRupee, Target } from 'lucide-react-native';
 import { useApp } from '../../src/context/AppContext';
@@ -19,11 +19,20 @@ const EMPTY_MANUAL_PRODUCT = {
 const FALLBACK_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500';
 
 export default function WatchlistScreen() {
-  const { watchlist, addToWatchlist } = useApp();
+  const { watchlist, addToWatchlist, isReady } = useApp();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<string>('all');
-  const [manualFormVisible, setManualFormVisible] = useState(watchlist.length === 0);
+
+  // FIX: don't initialise from watchlist.length — context may still be loading.
+  // Start as false; once the context is ready AND the list is empty, open the form.
+  const [manualFormVisible, setManualFormVisible] = useState(false);
   const [manualProduct, setManualProduct] = useState(EMPTY_MANUAL_PRODUCT);
+
+  useEffect(() => {
+    if (isReady && watchlist.length === 0) {
+      setManualFormVisible(true);
+    }
+  }, [isReady]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -31,24 +40,28 @@ export default function WatchlistScreen() {
   }, []);
 
   const totalProducts = watchlist.length;
-  
+
   const potentialSavings = watchlist.reduce((sum, item) => {
     return sum + Math.max(0, item.previousPrice - item.currentPrice);
   }, 0);
-  
-  const activeAlerts = watchlist.filter(w => w.targetPrice && w.currentPrice > w.targetPrice).length;
+
+  // FIX: "Active Alerts" = items where the target HAS BEEN REACHED (price <= target).
+  // currentPrice > targetPrice means the price hasn't dropped to target yet (pending).
+  const activeAlerts = watchlist.filter(
+    (w) => w.targetPrice !== undefined && w.currentPrice <= w.targetPrice
+  ).length;
 
   const filteredWatchlist = useMemo(() => {
     let list = [...watchlist];
     if (filter === 'price_dropped') {
-      list = list.filter(w => w.priceDropPercent > 0);
+      list = list.filter((w) => w.priceDropPercent > 0);
     } else if (filter === 'has_target') {
-      list = list.filter(w => w.targetPrice !== undefined);
+      list = list.filter((w) => w.targetPrice !== undefined);
     }
     return list.sort((a, b) => b.addedAt - a.addedAt);
   }, [watchlist, filter]);
 
-  const FilterButton = ({ label, value }: { label: string, value: string }) => {
+  const FilterButton = ({ label, value }: { label: string; value: string }) => {
     const isActive = filter === value;
     return (
       <TouchableOpacity
@@ -102,7 +115,9 @@ export default function WatchlistScreen() {
     }
 
     const now = Date.now();
-    const productId = manualProduct.upc.trim() || `manual_${now}`;
+    // Use user-supplied UPC if provided; otherwise use a manual_ sentinel ID.
+    const upcValue = manualProduct.upc.trim();
+    const productId = upcValue || `manual_${now}`;
     const store = manualProduct.store.trim() || 'Manual price';
     const priceDropPercent =
       previousPrice > currentPrice
@@ -112,6 +127,7 @@ export default function WatchlistScreen() {
     addToWatchlist({
       id: `watch_manual_${now}`,
       productId,
+      upc: upcValue,   // FIX: store the UPC field explicitly
       name,
       brand,
       image: manualProduct.image.trim() || FALLBACK_PRODUCT_IMAGE,
@@ -172,13 +188,13 @@ export default function WatchlistScreen() {
       <View className="absolute top-0 left-0 w-64 h-64 bg-[#2ECC71]/10 rounded-full blur-[80px]" />
       <View className="absolute top-40 right-0 w-64 h-64 bg-[#F4A261]/10 rounded-full blur-[80px]" />
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2ECC71" />}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         <View className="px-6 pt-16 pb-6">
-          
+
           {/* Header */}
           <View className="mb-8">
             <View className="flex-row items-center justify-between gap-3 mb-2">
@@ -335,7 +351,7 @@ export default function WatchlistScreen() {
                 </View>
               ) : (
                 <View>
-                  {filteredWatchlist.map(item => (
+                  {filteredWatchlist.map((item) => (
                     <WishlistCard key={item.id} item={item} />
                   ))}
                 </View>

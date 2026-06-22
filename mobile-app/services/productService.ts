@@ -59,7 +59,7 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const CACHE_PREFIX = "verity_product_cache_";
+const CACHE_PREFIX = "verity_product_cache_v2_";//to clear the old cache
 const REQUEST_TIMEOUT_MS = 8000;
 
 export const PLACEHOLDER_IMAGE =

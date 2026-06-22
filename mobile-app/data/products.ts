@@ -28,7 +28,7 @@ export const products: Product[] = [
     upc: "8901765126122",
     name: "Hauser XO Ball Pen Blue",
     brand: "Hauser",
-    image: "https://m.media-amazon.com/images/I/61sLt7Hf7SL._SL1500_.jpg",
+    image: "https://m.media-amazon.com/images/I/41i6o994xkL.jpg",
     description:
       "Smooth writing blue ball pen with a comfortable grip and reliable ink flow for daily notes, school, and office use.",
     category: "Stationery",
@@ -50,7 +50,7 @@ export const products: Product[] = [
     upc: "8906095062653",
     name: "Hauser XO Ball Pen Blue",
     brand: "Hauser",
-    image: "https://m.media-amazon.com/images/I/61sLt7Hf7SL._SL1500_.jpg",
+    image: "https://m.media-amazon.com/images/I/41i6o994xkL.jpg",
     description:
       "Smooth writing blue ball pen with a comfortable grip and reliable ink flow for daily notes, school, and office use.",
     category: "Stationery",
@@ -72,7 +72,7 @@ export const products: Product[] = [
     upc: "8902519010124",
     name: "Classmate Notebook Single Line 172 Pages",
     brand: "Classmate",
-    image: "https://m.media-amazon.com/images/I/71u8ZRDCVoL._SL1500_.jpg",
+    image: "https://kitabwalah.com/wp-content/uploads/2026/02/brown-3.png",
     description:
       "Single line notebook with quality paper, durable binding, and ruled pages for school, college, and office writing.",
     category: "Stationery",
@@ -94,7 +94,7 @@ export const products: Product[] = [
     upc: "8906021112105",
     name: "Classmate Notebook Single Line 172 Pages",
     brand: "Classmate",
-    image: "https://m.media-amazon.com/images/I/71u8ZRDCVoL._SL1500_.jpg",
+    image: "https://kitabwalah.com/wp-content/uploads/2026/02/brown-3.png",
     description:
       "Single line notebook with quality paper, durable binding, and ruled pages for school, college, and office writing.",
     category: "Stationery",
@@ -116,7 +116,7 @@ export const products: Product[] = [
     upc: "8901058844510",
     name: "Maggi 2-Minute Masala Noodles 70g",
     brand: "Maggi",
-    image: "https://m.media-amazon.com/images/I/81tioCUVf4L._SL1500_.jpg",
+    image: "https://www.secondrecipe.com/wp-content/uploads/2020/04/vegetable-maggi-noodles.jpg",
     description:
       "Classic masala instant noodles with the familiar Maggi tastemaker, ready in minutes for a quick snack or light meal.",
     category: "Instant Food",
@@ -204,7 +204,7 @@ export const products: Product[] = [
     upc: "8901233021309",
     name: "Cadbury Dairy Milk Chocolate 36g",
     brand: "Cadbury",
-    image: "https://m.media-amazon.com/images/I/61aJc0zjXQL._SL1000_.jpg",
+    image: "https://cococart.in/cdn/shop/files/1CH2562.png?v=1773821191&width=1946",
     description:
       "Creamy milk chocolate bar with the classic Cadbury Dairy Milk taste, suited for gifting, sharing, or a quick sweet bite.",
     category: "Chocolate",

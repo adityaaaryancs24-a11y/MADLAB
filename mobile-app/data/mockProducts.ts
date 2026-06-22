@@ -110,7 +110,7 @@ export const mockGroceryProducts: Record<string, GroceryProduct> = {
     brand: "La Croix",
     model: "Lime 12-Pack Cans",
     upc: "012993102123",
-    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500",
+    image: "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR-qSVWFzCaJKupzXC0ddBzPbxQR69BDI-zew9CBtVX3rx08auRR2PN0_yZKjxC0neFr6cBouj7BtohWHN_TSfGlG2_4IgfDiSdhUvEKw1iywIo4vjGsUFOgHA",
     category: "Beverages",
     description: "Naturally-essenced sparkling water with a crisp lime flavor. Zero calories, zero sweeteners, and zero sodium. The perfect guilt-free refreshing drink.",
     prices: [

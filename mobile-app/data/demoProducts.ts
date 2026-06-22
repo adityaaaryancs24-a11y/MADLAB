@@ -45,7 +45,7 @@ export const demoProducts: DemoProduct[] = [
     upc: "8902519010124",
     name: "Classmate Notebook",
     brand: "Classmate",
-    image: "https://m.media-amazon.com/images/I/71u8ZRDCVoL._SL1500_.jpg",
+    image: "https://kitabwalah.com/wp-content/uploads/2026/02/brown-3.png",
     description:
       "A ruled Classmate notebook with smooth paper, sturdy binding, and a durable cover for school, college, and office notes.",
     category: "Stationery",
@@ -78,7 +78,7 @@ export const demoProducts: DemoProduct[] = [
     upc: "8901765126122",
     name: "Hauser XO Pen",
     brand: "Hauser",
-    image: "https://m.media-amazon.com/images/I/61sLt7Hf7SL._SL1500_.jpg",
+    image: "https://m.media-amazon.com/images/I/41i6o994xkL.jpg",
     description:
       "A smooth blue ball pen with consistent ink flow and a comfortable grip for everyday writing and note-taking.",
     category: "Stationery",
@@ -144,7 +144,7 @@ export const demoProducts: DemoProduct[] = [
     upc: "8901071704229",
     name: "Hershey's Kisses Chocolate",
     brand: "Hershey's",
-    image: "https://m.media-amazon.com/images/I/71nK0TaQY-L._SL1500_.jpg",
+    image: "https://m.media-amazon.com/images/I/51TZlWXmusL.jpg",
     description:
       "Bite-sized Hershey's Kisses milk chocolates wrapped for sharing, gifting, dessert toppings, or a quick sweet treat.",
     category: "Chocolate",

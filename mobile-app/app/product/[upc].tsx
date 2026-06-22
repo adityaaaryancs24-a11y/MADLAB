@@ -195,15 +195,15 @@ export default function ProductDetailScreen() {
     getSimilarProducts(String(product.id), 8).length > 0
       ? getSimilarProducts(String(product.id), 8)
       : getProductsByCategory(product.category, 8);
-  // Check BOTH product.id and product.upc — older entries may have been stored
-  // with productId = product.upc; new ones use product.id. This keeps the heart
-  // synced regardless of which screen added the item.
+
+  // Match by UPC (the canonical route key) — product.upc is always the barcode
+  // stored in the watchlist. Older entries used product.id as a fallback so we
+  // keep that secondary check to keep the heart icon in sync.
   const isSaved = watchlist.some(
-    (item) => item.productId === String(product.id) || item.productId === product.upc
+    (item) => item.upc === product.upc || item.productId === String(product.id)
   );
 
   const handleWatchlistToggle = async () => {
-    // Spring animation: 1 → 1.3 → 1
     heartScale.value = withSequence(
       withSpring(1.3, { damping: 4, stiffness: 300 }),
       withSpring(1, { damping: 10, stiffness: 200 })
@@ -213,22 +213,26 @@ export default function ProductDetailScreen() {
 
     if (isSaved) {
       const watchlistItem = watchlist.find(
-        (item) => item.productId === String(product.id) || item.productId === product.upc
+        (item) => item.upc === product.upc || item.productId === String(product.id)
       );
       if (watchlistItem) removeFromWatchlist(watchlistItem.id);
       return;
     }
 
+    // FIX: store product.upc as productId so /product/[upc] can be re-opened,
+    // and populate the new upc field. Do NOT set a default targetPrice — that
+    // would inflate the Active Alerts counter and the "Has Target" filter.
     addToWatchlist({
-      id: `watch_${product.id}_${Date.now()}`,
-      productId: String(product.id),   // standardized to string key, NOT upc
+      id: `watch_${product.upc}_${Date.now()}`,
+      productId: product.upc,        // ← UPC, not product.id
+      upc: product.upc,              // ← explicit upc field
       name: product.name,
       brand: product.brand,
       image: product.image,
       currentPrice: pricing.lowestPrice,
       previousPrice: pricing.averagePrice || pricing.lowestPrice,
       priceDropPercent: Number(pricing.savingsPercent.toFixed(1)),
-      targetPrice: Number((pricing.lowestPrice * 0.9).toFixed(2)),
+      // targetPrice intentionally omitted — user can set it manually via the bell
       priceHistory: product.price_history.map((point) => ({
         timestamp: new Date(point.date || point.recorded_at).getTime(),
         price: point.price,

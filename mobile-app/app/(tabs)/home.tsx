@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
 import { router } from "expo-router";
-import { Search, History, Settings, Zap, TrendingUp } from "lucide-react-native";
+import {
+  Search,
+  History,
+  Zap,
+  TrendingUp,
+  Flashlight,
+  FlashlightOff,
+} from "lucide-react-native";
 import { useApp } from "../../src/context/AppContext";
 import { CameraView, useCameraPermissions } from "expo-camera";
 
@@ -9,6 +16,7 @@ export default function Home() {
   const { scanHistory } = useApp();
   const [isScanning, setIsScanning] = useState(false);
   const [scanLineY, setScanLineY] = useState(0);
+  const [torchEnabled, setTorchEnabled] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
 
   const recentScans = scanHistory.slice(0, 5);
@@ -101,6 +109,7 @@ export default function Home() {
             <CameraView 
               style={{ flex: 1 }} 
               facing="back"
+              enableTorch={torchEnabled}
               barcodeScannerSettings={{
                 barcodeTypes: ["qr", "ean13", "ean8", "upc_a", "upc_e"],
               }}
@@ -114,6 +123,19 @@ export default function Home() {
             <View className="absolute bottom-5 left-5 w-12 h-12 border-b-[3px] border-l-[3px] border-[#2ECC71] rounded-bl-xl" />
             <View className="absolute bottom-5 right-5 w-12 h-12 border-b-[3px] border-r-[3px] border-[#2ECC71] rounded-br-xl" />
           </View>
+
+          
+          <TouchableOpacity
+            onPress={() => setTorchEnabled(!torchEnabled)}
+            className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/60 items-center justify-center z-50"
+          >
+            {torchEnabled ? (
+              <FlashlightOff size={22} color="#fff" />
+            ) : (
+              <Flashlight size={22} color="#fff" />
+            )}
+          </TouchableOpacity>
+
 
           {isScanning && (
             <View
