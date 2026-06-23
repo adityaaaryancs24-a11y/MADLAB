@@ -7,6 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { Search, X, Mic } from "lucide-react-native";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 type Props = {
   value: string;
@@ -30,6 +31,7 @@ export default function SearchBar({
   const inputRef = useRef<TextInput>(null);
   const clearOpacity = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
+  const { theme, accent } = useAppTheme();
 
   useEffect(() => {
     Animated.timing(clearOpacity, {
@@ -61,7 +63,7 @@ export default function SearchBar({
 
   const borderColor = glowAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["rgba(255,255,255,0.08)", "rgba(46,204,113,0.5)"],
+    outputRange: [theme.border, accent.hex + "80"],
   });
 
   return (
@@ -69,12 +71,12 @@ export default function SearchBar({
       <Animated.View
         className="flex-row items-center rounded-2xl px-4 h-[52px] gap-3"
         style={{
-          backgroundColor: "rgba(255,255,255,0.06)",
+          backgroundColor: theme.bgCardAlt,
           borderWidth: 1.5,
           borderColor,
         }}
       >
-        <Search size={18} color="rgba(46,204,113,0.7)" />
+        <Search size={18} color={accent.hex} style={{ opacity: 0.8 }} />
 
         <TextInput
           ref={inputRef}
@@ -84,14 +86,15 @@ export default function SearchBar({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder="Search products, brands, UPC..."
-          placeholderTextColor="rgba(255,255,255,0.3)"
+          placeholderTextColor={theme.textDim}
           returnKeyType="search"
           autoCorrect={false}
           autoCapitalize="none"
           autoFocus={autoFocus}
-          className="flex-1 text-[15px] text-white py-0"
+          style={{ color: theme.text }}
+          className="flex-1 text-[15px] py-0"
           clearButtonMode="never"
-          selectionColor="#2ECC71"
+          selectionColor={accent.hex}
         />
 
         {/* Clear button */}
@@ -103,8 +106,8 @@ export default function SearchBar({
             }}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <View className="w-6 h-6 rounded-full bg-white/10 items-center justify-center">
-              <X size={12} color="rgba(255,255,255,0.6)" />
+            <View style={{ backgroundColor: theme.border }} className="w-6 h-6 rounded-full items-center justify-center">
+              <X size={12} color={theme.textMuted} />
             </View>
           </TouchableOpacity>
         </Animated.View>

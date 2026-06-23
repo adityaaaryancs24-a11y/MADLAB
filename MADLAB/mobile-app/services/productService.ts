@@ -13,14 +13,14 @@ import type { Product, PriceInfo } from "../src/types";
 import { fetchClient } from "./api";
 
 const STORE_LOGOS: Record<string, string> = {
-  amazon: "https://logo.clearbit.com/amazon.in",
-  flipkart: "https://logo.clearbit.com/flipkart.com",
-  blinkit: "https://logo.clearbit.com/blinkit.com",
-  bigbasket: "https://logo.clearbit.com/bigbasket.com",
-  zepto: "https://logo.clearbit.com/zeptonow.com",
-  dmart: "https://logo.clearbit.com/dmart.in",
-  reliance: "https://logo.clearbit.com/reliancedigital.in",
-  tatacliq: "https://logo.clearbit.com/tatacliq.com",
+  amazon: "https://www.google.com/s2/favicons?sz=128&domain=amazon.in",
+  flipkart: "https://www.google.com/s2/favicons?sz=128&domain=flipkart.com",
+  blinkit: "https://www.google.com/s2/favicons?sz=128&domain=blinkit.com",
+  bigbasket: "https://www.bbassets.com/static/staticContent/bb_logo.png",
+  zepto: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Zepto_Logo.svg/512px-Zepto_Logo.svg.png",
+  dmart: "https://www.google.com/s2/favicons?sz=128&domain=dmart.in",
+  reliance: "https://www.google.com/s2/favicons?sz=128&domain=reliancedigital.in",
+  tatacliq: "https://www.google.com/s2/favicons?sz=128&domain=tatacliq.com",
 };
 
 function getStoreLogo(storeName: string): string | undefined {
@@ -101,6 +101,42 @@ const REQUEST_TIMEOUT_MS = 8000;
 
 export const PLACEHOLDER_IMAGE =
   "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80";
+
+function getFallbackImageUrl(name: string, brand: string, category: string): string {
+  const cleanName = (name || "").replace(/[^a-zA-Z0-9 ]/g, "").trim().toLowerCase();
+  
+  if (cleanName.includes("kurkure")) {
+    try {
+      const res = Image.resolveAssetSource(require("../assets/images/kurkure.png"));
+      if (res) return res.uri;
+    } catch {}
+  }
+  if (cleanName.includes("tata salt")) {
+    try {
+      const res = Image.resolveAssetSource(require("../assets/images/tata_salt.png"));
+      if (res) return res.uri;
+    } catch {}
+  }
+  if (cleanName.includes("maggi") && cleanName.includes("noodle")) {
+    return "https://www.bigbasket.com/media/uploads/p/l/266109_15-maggi-2-minute-masala-instant-noodles.jpg";
+  }
+  if (cleanName.includes("surf excel")) {
+    return "https://www.bigbasket.com/media/uploads/p/l/266977_9-surf-excel-easy-wash-detergent-powder.jpg";
+  }
+  if (cleanName.includes("amul butter")) {
+    return "https://www.bigbasket.com/media/uploads/p/l/104865_6-amul-butter-pasteurised.jpg";
+  }
+  if (cleanName.includes("taj mahal") && cleanName.includes("tea")) {
+    return "https://www.bigbasket.com/media/uploads/p/l/266050_14-taj-mahal-tea.jpg";
+  }
+  if (cleanName.includes("dabur honey")) {
+    return "https://www.bigbasket.com/media/uploads/p/l/102604_11-dabur-honey-100-pure.jpg";
+  }
+
+  const words = cleanName.split(" ").filter(w => w.length > 2);
+  const keyword = words.slice(0, 2).join(",") || category || "product";
+  return `https://loremflickr.com/600/600/${encodeURIComponent(keyword)}`;
+}
 
 const memoryCache = new Map<string, CacheEntry>();
 
@@ -206,13 +242,27 @@ function backendResponseToBackendProduct(data: any): BackendProduct {
     updated_at: p.updated_at,
   }));
 
-  const priceHistory = (data.price_history || []).map((h: any) => ({
-    id: h.id,
-    price: h.price,
-    store: h.store,
-    recorded_at: h.recorded_at,
-    date: new Date(h.recorded_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-  }));
+  const priceHistory = (data.price_history || []).map((h: any) => {
+    let dateStr = "N/A";
+    if (h.recorded_at) {
+      const d = new Date(h.recorded_at);
+      if (!isNaN(d.getTime())) {
+        dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      }
+    }
+    return {
+      id: h.id,
+      price: h.price,
+      store: h.store,
+      recorded_at: h.recorded_at,
+      date: dateStr,
+    };
+  });
+
+  const rawImage = data.image_url || PLACEHOLDER_IMAGE;
+  const image = rawImage === PLACEHOLDER_IMAGE
+    ? getFallbackImageUrl(data.name, data.brand || "Unknown Brand", data.category || "Grocery")
+    : rawImage;
 
   return {
     id: data.id,
@@ -220,14 +270,18 @@ function backendResponseToBackendProduct(data: any): BackendProduct {
     name: data.name,
     brand: data.brand || "Unknown Brand",
     model: data.name,
-    image: data.image_url || PLACEHOLDER_IMAGE,
-    image_url: data.image_url || PLACEHOLDER_IMAGE,
+    image: image,
+    image_url: image,
     description: data.description || "",
     category: data.category || "Grocery",
     prices: prices.sort((a: any, b: any) => a.price - b.price),
-    price_history: priceHistory.sort((a: any, b: any) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()),
+    price_history: priceHistory.sort((a: any, b: any) => {
+      const aTime = a.recorded_at ? new Date(a.recorded_at).getTime() : 0;
+      const bTime = b.recorded_at ? new Date(b.recorded_at).getTime() : 0;
+      return aTime - bTime;
+    }),
     dataSource: "local",
-    pricePrediction: predictPrice(data.upc),
+    pricePrediction: predictPrice(data.upc, 7, prices.length > 0 ? Math.min(...prices.map((p: any) => p.price)) : undefined),
   };
 }
 
@@ -262,7 +316,10 @@ function localProductToBackendProduct(product: LocalProduct): BackendProduct {
     };
   });
 
-  const resolvedImage = getProductImage(product.image);
+  let resolvedImage = getProductImage(product.image);
+  if (resolvedImage === PLACEHOLDER_IMAGE) {
+    resolvedImage = getFallbackImageUrl(product.name, product.brand, product.category);
+  }
 
   return {
     id: product.upc,
@@ -281,7 +338,7 @@ function localProductToBackendProduct(product: LocalProduct): BackendProduct {
     prices,
     price_history: priceHistory,
     dataSource: "local",
-    pricePrediction: predictPrice(product.upc),
+    pricePrediction: predictPrice(product.upc, 7, prices.length > 0 ? Math.min(...prices.map(p => p.price)) : undefined),
   };
 }
 
@@ -316,7 +373,10 @@ function demoProductToBackendProduct(product: DemoProduct): BackendProduct {
     };
   });
 
-  const resolvedImage = getProductImage(product.image);
+  let resolvedImage = getProductImage(product.image);
+  if (resolvedImage === PLACEHOLDER_IMAGE) {
+    resolvedImage = getFallbackImageUrl(product.name, product.brand, product.category);
+  }
 
   return {
     id: product.upc,
@@ -353,7 +413,10 @@ function productToBackendProduct(
       recorded_at: new Date(point.timestamp).toISOString(),
     })) ?? normalizeHistory(product.id, product.category, product.name);
 
-  const resolvedImage = getProductImage(product.image);
+  let resolvedImage = getProductImage(product.image);
+  if (resolvedImage === PLACEHOLDER_IMAGE) {
+    resolvedImage = getFallbackImageUrl(product.name, product.brand, product.category ?? "General");
+  }
 
   return {
     id: product.id,
@@ -373,7 +436,7 @@ function productToBackendProduct(
     price_history: priceHistory,
     dataSource: source,
     warning,
-    pricePrediction: predictPrice(product.id),
+    pricePrediction: predictPrice(product.id, 7, prices.length > 0 ? Math.min(...prices.map(p => p.price)) : undefined),
   };
 }
 

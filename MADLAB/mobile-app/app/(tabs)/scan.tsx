@@ -18,11 +18,13 @@ import { LoadingSteps } from "../../components/scanner/LoadingSteps";
 import { BackendProduct } from "../../services/productService";
 import { useApp } from "../../src/context/AppContext";
 import { useBarcodeLookup } from "../../hooks/useBarcodeLookup";
+import { useAppTheme } from "../../src/hooks/useAppTheme";
 
 const SCAN_LOCK_MS = 2000;
 
 export default function ScannerScreen() {
   const { addToHistory, settings } = useApp();
+  const { theme, accent, isDark } = useAppTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [scanLocked, setScanLocked] = useState(false);
@@ -105,35 +107,36 @@ export default function ScannerScreen() {
 
   if (!permission) {
     return (
-      <View className="flex-1 bg-[#0A0E15] items-center justify-center">
-        <ActivityIndicator size="large" color="#4ADE80" />
-        <Text className="text-white/60 text-sm mt-4 font-medium">Initializing camera...</Text>
+      <View style={{ backgroundColor: theme.bg }} className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={accent.hex} />
+        <Text style={{ color: theme.textMuted }} className="text-sm mt-4 font-medium">Initializing camera...</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView className="flex-1 bg-[#0A0E15] items-center justify-center px-6">
+      <SafeAreaView style={{ backgroundColor: theme.bg }} className="flex-1 items-center justify-center px-6">
         <View className="w-16 h-16 rounded-2xl bg-red-500/10 items-center justify-center mb-6">
           <ShieldAlert size={36} color="#EF4444" />
         </View>
-        <Text className="text-white text-2xl font-bold mb-3 text-center">Camera Access Required</Text>
-        <Text className="text-white/60 text-base text-center mb-8 leading-relaxed">
+        <Text style={{ color: theme.text }} className="text-2xl font-bold mb-3 text-center">Camera Access Required</Text>
+        <Text style={{ color: theme.textMuted }} className="text-base text-center mb-8 leading-relaxed">
           Verity needs camera permissions to scan EAN/UPC product barcodes and look up retail prices.
         </Text>
         <TouchableOpacity
           onPress={requestPermission}
-          className="w-full py-4 bg-[#4ADE80] rounded-2xl items-center shadow-lg shadow-[#4ADE80]/15"
+          style={{ backgroundColor: accent.hex }}
+          className="w-full py-4 rounded-2xl items-center"
         >
-          <Text className="text-[#0A0E15] font-bold text-lg">Allow Camera</Text>
+          <Text style={{ color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-bold text-lg">Allow Camera</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#0A0E15] relative">
+    <View style={{ backgroundColor: theme.bg }} className="flex-1 relative">
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"
@@ -155,7 +158,7 @@ export default function ScannerScreen() {
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none" className="justify-between">
         <View className="w-full justify-center px-6 pt-12" pointerEvents="none">
           <View className="flex-row items-center gap-2">
-            <Zap size={22} color="#4ADE80" fill="#4ADE80" />
+            <Zap size={22} color={accent.hex} fill={accent.hex} />
             <Text className="text-white font-extrabold text-xl tracking-tight">VERITY SCAN</Text>
           </View>
         </View>
@@ -172,9 +175,9 @@ export default function ScannerScreen() {
 
           <TouchableOpacity
             onPress={() => setManualInputVisible(true)}
-            className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-center gap-2"
+            className="w-full py-4 bg-black/40 border border-white/10 rounded-2xl flex-row items-center justify-center gap-2"
           >
-            <Keyboard size={18} color="#4ADE80" />
+            <Keyboard size={18} color={accent.hex} />
             <Text className="text-white/90 font-bold text-sm">Manual Barcode</Text>
           </TouchableOpacity>
         </View>
@@ -187,19 +190,20 @@ export default function ScannerScreen() {
           keyboardShouldPersistTaps="always"
         >
           <View className="absolute inset-0 bg-black/85 items-center justify-center p-6">
-            <View className="w-full bg-[#111827] border border-white/10 rounded-3xl p-6 relative">
+            <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="w-full border rounded-3xl p-6 relative">
               <TouchableOpacity
                 onPress={() => {
                   setManualInputVisible(false);
                   setInputError(null);
                 }}
-                className="absolute top-4 right-4 w-8 h-8 bg-white/5 rounded-full items-center justify-center"
+                style={{ backgroundColor: theme.bgCardAlt }}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full items-center justify-center"
               >
-                <X size={16} color="rgba(255,255,255,0.6)" />
+                <X size={16} color={theme.textMuted} />
               </TouchableOpacity>
 
-              <Text className="text-white text-lg font-bold mb-1">Enter Barcode</Text>
-              <Text className="text-white/50 text-xs mb-5">
+              <Text style={{ color: theme.text }} className="text-lg font-bold mb-1">Enter Barcode</Text>
+              <Text style={{ color: theme.textMuted }} className="text-xs mb-5">
                 Type a standard 12-digit UPC or 13-digit EAN code.
               </Text>
 
@@ -210,11 +214,12 @@ export default function ScannerScreen() {
                   if (inputError) setInputError(null);
                 }}
                 placeholder="e.g. 034000000210"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={theme.textDim}
                 keyboardType="numeric"
                 maxLength={14}
                 autoFocus
-                className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-4 text-white text-base font-semibold mb-3 text-center"
+                style={{ color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                className="w-full border rounded-2xl py-4 px-4 text-base font-semibold mb-3 text-center"
               />
 
               {inputError && (
@@ -223,9 +228,10 @@ export default function ScannerScreen() {
 
               <TouchableOpacity
                 onPress={handleManualSubmit}
-                className="w-full py-4 bg-[#4ADE80] rounded-2xl items-center shadow-lg shadow-[#44b36d]/10 mt-1"
+                style={{ backgroundColor: accent.hex }}
+                className="w-full py-4 rounded-2xl items-center mt-1"
               >
-                <Text className="text-[#0A0E15] font-bold text-sm">Look up Product</Text>
+                <Text style={{ color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-bold text-sm">Look up Product</Text>
               </TouchableOpacity>
             </View>
           </View>

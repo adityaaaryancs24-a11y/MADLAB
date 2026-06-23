@@ -10,6 +10,7 @@ import Svg, {
   Line,
   Text as SvgText,
 } from "react-native-svg";
+import { useAppTheme } from "../hooks/useAppTheme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CHART_HEIGHT = 160;
@@ -39,6 +40,7 @@ function buildSmoothPath(
 }
 
 export function NativePriceChart({ data }: NativePriceChartProps) {
+  const { isDark, theme, accent } = useAppTheme();
   const chartWidth = SCREEN_WIDTH - 48; // account for px-6 padding on both sides
 
   const { points, linePath, fillPath, minPrice, maxPrice, tickLabels } =
@@ -103,7 +105,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
           marginBottom: 24,
         }}
       >
-        <Text style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+        <Text style={{ color: theme.textDim, fontSize: 12 }}>
           Not enough price history to display chart
         </Text>
       </View>
@@ -129,7 +131,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
       >
         <Text
           style={{
-            color: "rgba(255,255,255,0.6)",
+            color: theme.textMuted,
             fontSize: 11,
             fontWeight: "700",
             textTransform: "uppercase",
@@ -150,12 +152,12 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
               width: 8,
               height: 8,
               borderRadius: 4,
-              backgroundColor: "#4ADE80",
+              backgroundColor: accent.hex,
             }}
           />
           <Text
             style={{
-              color: "rgba(255,255,255,0.4)",
+              color: theme.textDim,
               fontSize: 10,
               fontWeight: "600",
             }}
@@ -168,10 +170,10 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
       {/* SVG chart */}
       <View
         style={{
-          backgroundColor: "#111827",
+          backgroundColor: theme.bgCard,
           borderRadius: 20,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.05)",
+          borderColor: theme.border,
           overflow: "hidden",
           paddingBottom: 12,
         }}
@@ -179,8 +181,8 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
         <Svg width={chartWidth} height={CHART_HEIGHT}>
           <Defs>
             <LinearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#4ADE80" stopOpacity="0.25" />
-              <Stop offset="100%" stopColor="#4ADE80" stopOpacity="0" />
+              <Stop offset="0%" stopColor={accent.hex} stopOpacity="0.25" />
+              <Stop offset="100%" stopColor={accent.hex} stopOpacity="0" />
             </LinearGradient>
           </Defs>
 
@@ -196,7 +198,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
                 y1={y}
                 x2={chartWidth - PADDING_H}
                 y2={y}
-                stroke="rgba(255,255,255,0.04)"
+                stroke={isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}
                 strokeWidth={1}
               />
             );
@@ -209,7 +211,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
           <Path
             d={linePath}
             fill="none"
-            stroke="#4ADE80"
+            stroke={accent.hex}
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -220,8 +222,8 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
             cx={lastPoint.x}
             cy={lastPoint.y}
             r={5}
-            fill="#4ADE80"
-            stroke="#0A0E15"
+            fill={accent.hex}
+            stroke={theme.bg}
             strokeWidth={2}
           />
 
@@ -231,7 +233,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
               key={i}
               x={tick.x}
               y={CHART_HEIGHT - 6}
-              fill="rgba(255,255,255,0.3)"
+              fill={theme.textDim}
               fontSize="9"
               fontWeight="600"
               textAnchor="middle"
@@ -253,7 +255,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
         >
           <Text
             style={{
-              color: "rgba(255,255,255,0.25)",
+              color: theme.textDim,
               fontSize: 9,
               fontWeight: "600",
             }}
@@ -262,7 +264,7 @@ export function NativePriceChart({ data }: NativePriceChartProps) {
           </Text>
           <Text
             style={{
-              color: "rgba(255,255,255,0.25)",
+              color: theme.textDim,
               fontSize: 9,
               fontWeight: "600",
             }}

@@ -16,11 +16,13 @@ import {
   Award,
 } from "lucide-react-native";
 import { useApp } from "../../src/context/AppContext";
+import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { getBestDeals, getMockPrices, mockProducts } from "../../src/utils/mockData";
 
 export default function HomeDashboard() {
   const router = useRouter();
   const { scanHistory, watchlist, user } = useApp();
+  const { theme, accent, isDark } = useAppTheme();
 
   const recentScans = scanHistory.slice(0, 5);
 
@@ -41,7 +43,6 @@ export default function HomeDashboard() {
       }
     });
 
-    // Fallback: estimate savings based on scan history
     const baseSavings = stats.totalScans > 0 ? stats.totalScans * 42.50 + 150 : 250;
     const finalSaved = totalSaved > 0 ? totalSaved : baseSavings;
     const avgDiscount = totalSaved > 0 ? 18 : 14;
@@ -69,7 +70,6 @@ export default function HomeDashboard() {
 
     if (drops.length > 0) return drops.slice(0, 3);
 
-    // Curated Indian price drop alerts as fallback
     return [
       {
         upc: "8901030875707",
@@ -87,14 +87,14 @@ export default function HomeDashboard() {
         brand: "Tata",
         price: 27,
         oldPrice: 28,
-        image: "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=400&q=80",
+        image: "https://www.bigbasket.com/media/uploads/p/l/241696_9-tata-salt-iodized.jpg",
         store: "Flipkart",
         discount: 4,
       },
     ];
   }, [watchlist]);
 
-  // 4. Trending Products (highly popular Indian local catalog items)
+  // 4. Trending Products
   const trendingProducts = useMemo(() => {
     return [
       {
@@ -132,7 +132,7 @@ export default function HomeDashboard() {
     ];
   }, []);
 
-  // 5. Personalized Recommendations (category-matched or recommended essentials)
+  // 5. Personalized Recommendations
   const recommendations = useMemo(() => {
     const lastScan = scanHistory[0];
     const lastProduct = lastScan
@@ -183,7 +183,7 @@ export default function HomeDashboard() {
     return catalog.slice(0, 3);
   }, [scanHistory]);
 
-  // Fetch top featured deals from mock engine
+  // Featured deals
   const featuredDeals = useMemo(() => {
     const deals = getBestDeals(3);
     return deals.map((deal) => {
@@ -218,88 +218,94 @@ export default function HomeDashboard() {
     return `${days}d ago`;
   };
 
+  // Text color on green buttons
+  const btnTextCol = isDark ? "#0A0E15" : "#FFFFFF";
+
   return (
-    <View className="flex-1 bg-[#0A0E15]">
+    <View style={{ backgroundColor: theme.bg }} className="flex-1">
 
       {/* Top Bar */}
-      <View className="flex-row items-center justify-between px-6 pt-14 pb-5 border-b border-white/5 bg-[#0A0E15]/50">
+      <View style={{ borderBottomColor: theme.border, backgroundColor: theme.bgCardAlt }} className="flex-row items-center justify-between px-6 pt-14 pb-5 border-b">
         <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-xl bg-[#2ECC71] items-center justify-center shadow-lg shadow-[#2ECC71]/15">
-            <Zap size={20} color="#0A0E15" fill="currentColor" />
+          <View style={{ backgroundColor: accent.hex }} className="w-10 h-10 rounded-xl items-center justify-center shadow-lg">
+            <Zap size={20} color={isDark ? "#0A0E15" : "#FFFFFF"} fill="currentColor" />
           </View>
-          <Text className="font-black text-white text-[26px] tracking-tight">Verity</Text>
+          <Text style={{ color: theme.text }} className="font-black text-[26px] tracking-tight">Verity</Text>
         </View>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/settings" as any)}
-          className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 items-center justify-center"
+          style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+          className="w-10 h-10 rounded-xl border items-center justify-center"
         >
-          <Settings size={20} color="rgba(255,255,255,0.7)" />
+          <Settings size={20} color={theme.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
         {/* Welcome Section */}
         <View className="px-6 pt-6 pb-4">
-          <Text className="text-white/50 text-sm font-bold uppercase tracking-wider mb-1">
+          <Text style={{ color: theme.textMuted }} className="text-sm font-bold uppercase tracking-wider mb-1">
             Welcome back
           </Text>
-          <Text className="text-white text-3xl font-black mb-1">
+          <Text style={{ color: theme.text }} className="text-3xl font-black mb-1">
             {user?.name || "Smart Shopper"}
           </Text>
-          <Text className="text-white/60 text-sm leading-6">
+          <Text style={{ color: theme.textMuted }} className="text-sm leading-6">
             Compare Indian e-commerce prices and track smart deals instantly.
           </Text>
         </View>
 
         {/* Savings Summary Card */}
-        <View className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border border-emerald-500/20 rounded-3xl p-5 mb-2 mx-6 relative overflow-hidden">
+        <View style={{ borderColor: accent.hex + "33", backgroundColor: accent.hex + "11" }} className="border rounded-3xl p-5 mb-2 mx-6 relative overflow-hidden">
           <View className="flex-row justify-between items-center mb-3">
             <View className="flex-row items-center gap-2">
-              <Percent size={18} color="#4ADE80" />
-              <Text className="text-white font-extrabold text-sm uppercase tracking-wider">
+              <Percent size={18} color={accent.hex} />
+              <Text style={{ color: theme.text }} className="font-extrabold text-sm uppercase tracking-wider">
                 My Savings Summary
               </Text>
             </View>
-            <View className="px-2 py-0.5 bg-[#4ADE80]/10 border border-[#4ADE80]/20 rounded-full">
-              <Text className="text-[#4ADE80] text-[10px] font-bold">ACTIVE</Text>
+            <View style={{ backgroundColor: accent.hex + "22", borderColor: accent.hex + "44" }} className="px-2 py-0.5 border rounded-full">
+              <Text style={{ color: accent.hex }} className="text-[10px] font-bold">ACTIVE</Text>
             </View>
           </View>
           <View className="flex-row items-baseline gap-2 mb-1.5">
-            <Text className="text-white text-3xl font-black">
+            <Text style={{ color: theme.text }} className="text-3xl font-black">
               ₹{savingsSummary.saved.toFixed(0)}
             </Text>
-            <Text className="text-[#4ADE80] text-sm font-bold">Saved this month</Text>
+            <Text style={{ color: accent.hex }} className="text-sm font-bold">Saved this month</Text>
           </View>
-          <Text className="text-white/50 text-xs leading-5">
-            Average deal discount of <Text className="text-white font-bold">{savingsSummary.percentage}%</Text> across scanned products. Compare prices to save more!
+          <Text style={{ color: theme.textMuted }} className="text-xs leading-5">
+            Average deal discount of <Text style={{ color: theme.text }} className="font-bold">{savingsSummary.percentage}%</Text> across scanned products. Compare prices to save more!
           </Text>
         </View>
 
         {/* Quick Stats Grid */}
         <View className="px-6 py-2 flex-row gap-3">
-          <View className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4">
-            <Text className="text-[#2ECC71] text-2xl font-black mb-0.5">{stats.totalScans}</Text>
-            <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
+          <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="flex-1 border rounded-2xl p-4">
+            <Text style={{ color: accent.hex }} className="text-2xl font-black mb-0.5">{stats.totalScans}</Text>
+            <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider">
               Total Scans
             </Text>
           </View>
 
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/watchlist" as any)}
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+            className="flex-1 border rounded-2xl p-4"
           >
-            <Text className="text-[#3B82F6] text-2xl font-black mb-0.5">{stats.totalWishlist}</Text>
-            <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
+            <Text style={{ color: "#3B82F6" }} className="text-2xl font-black mb-0.5">{stats.totalWishlist}</Text>
+            <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider">
               Wishlisted
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/watchlist" as any)}
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+            className="flex-1 border rounded-2xl p-4"
           >
-            <Text className="text-[#F4A261] text-2xl font-black mb-0.5">{stats.activeAlerts}</Text>
-            <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
+            <Text style={{ color: "#F4A261" }} className="text-2xl font-black mb-0.5">{stats.activeAlerts}</Text>
+            <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider">
               Active Alerts
             </Text>
           </TouchableOpacity>
@@ -309,15 +315,16 @@ export default function HomeDashboard() {
         <View className="px-6 py-4">
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/scan" as any)}
-            className="w-full flex-row items-center justify-between p-5 bg-[#2ECC71] rounded-3xl shadow-lg shadow-[#2ECC71]/10"
+            style={{ backgroundColor: accent.hex }}
+            className="w-full flex-row items-center justify-between p-5 rounded-3xl shadow-lg"
           >
             <View className="flex-row items-center gap-4">
               <View className="w-12 h-12 bg-black/10 rounded-2xl items-center justify-center">
-                <Camera size={24} color="#0A0E15" strokeWidth={2.5} />
+                <Camera size={24} color={btnTextCol} strokeWidth={2.5} />
               </View>
               <View>
-                <Text className="text-[#0A0E15] font-black text-lg">Scan a Barcode</Text>
-                <Text className="text-[#0A0E15]/70 text-xs">Compare Indian retail prices instantly</Text>
+                <Text style={{ color: btnTextCol }} className="font-black text-lg">Scan a Barcode</Text>
+                <Text style={{ color: btnTextCol + "CC" }} className="text-xs">Compare Indian retail prices instantly</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -329,11 +336,11 @@ export default function HomeDashboard() {
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center gap-2">
                 <BellRing size={18} color="#F4A261" />
-                <Text className="font-extrabold text-white text-base tracking-tight">
+                <Text style={{ color: theme.text }} className="font-extrabold text-base tracking-tight">
                   Price Drop Alerts
                 </Text>
               </View>
-              <View className="px-2.5 py-0.5 bg-[#F4A261]/10 border border-[#F4A261]/20 rounded-full">
+              <View style={{ backgroundColor: "rgba(244,162,97,0.15)", borderColor: "rgba(244,162,97,0.3)" }} className="px-2.5 py-0.5 border rounded-full">
                 <Text className="text-[#F4A261] text-[10px] font-bold">HOT DEALS</Text>
               </View>
             </View>
@@ -343,25 +350,26 @@ export default function HomeDashboard() {
                 <TouchableOpacity
                   key={`${item.upc}_${idx}`}
                   onPress={() => router.push(`/product/${item.upc}` as any)}
-                  className="flex-row items-center p-4 bg-white/5 border border-white/10 rounded-3xl relative overflow-hidden"
+                  style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                  className="flex-row items-center p-4 border rounded-3xl relative overflow-hidden"
                 >
-                  <View className="w-14 h-14 rounded-2xl bg-white/10 p-1 overflow-hidden border border-white/10 mr-4">
+                  <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="w-14 h-14 rounded-2xl p-1 overflow-hidden border mr-4">
                     <Image source={{ uri: item.image }} className="w-full h-full" resizeMode="contain" />
                   </View>
                   <View className="flex-1 justify-center mr-2">
-                    <Text className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">
+                    <Text style={{ color: theme.textMuted }} className="text-[9px] font-bold uppercase tracking-widest mb-0.5">
                       {item.brand}
                     </Text>
-                    <Text className="text-white font-bold text-sm leading-5 mb-1.5" numberOfLines={1}>
+                    <Text style={{ color: theme.text }} className="font-bold text-sm leading-5 mb-1.5" numberOfLines={1}>
                       {item.name}
                     </Text>
                     <View className="flex-row items-center gap-2 flex-wrap">
-                      <Text className="text-[#2ECC71] font-black text-sm">₹{item.price.toFixed(0)}</Text>
-                      <Text className="text-white/40 text-xs line-through">₹{item.oldPrice.toFixed(0)}</Text>
-                      <Text className="text-white/40 text-[10px]">at {item.store}</Text>
+                      <Text style={{ color: accent.hex }} className="font-black text-sm">₹{item.price.toFixed(0)}</Text>
+                      <Text style={{ color: theme.textMuted }} className="text-xs line-through">₹{item.oldPrice.toFixed(0)}</Text>
+                      <Text style={{ color: theme.textMuted }} className="text-[10px]">at {item.store}</Text>
                     </View>
                   </View>
-                  <View className="px-2 py-1 bg-red-500/20 border border-red-500/30 rounded-xl">
+                  <View style={{ backgroundColor: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.25)" }} className="px-2 py-1 border rounded-xl">
                     <Text className="text-red-400 font-bold text-xs">-{item.discount}%</Text>
                   </View>
                 </TouchableOpacity>
@@ -374,7 +382,7 @@ export default function HomeDashboard() {
         <View className="mt-8">
           <View className="flex-row items-center gap-2 mb-4 px-6">
             <TrendingUp size={18} color="#3B82F6" />
-            <Text className="font-extrabold text-white text-base tracking-tight">
+            <Text style={{ color: theme.text }} className="font-extrabold text-base tracking-tight">
               Trending Products
             </Text>
           </View>
@@ -383,9 +391,10 @@ export default function HomeDashboard() {
               <TouchableOpacity
                 key={item.upc}
                 onPress={() => router.push(`/product/${item.upc}` as any)}
-                className="w-40 bg-white/5 border border-white/10 rounded-3xl p-3 mr-4"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="w-40 border rounded-3xl p-3 mr-4"
               >
-                <View className="w-full h-28 rounded-2xl bg-white/10 overflow-hidden relative p-1.5 justify-center items-center mb-3">
+                <View style={{ backgroundColor: theme.bgCardAlt }} className="w-full h-28 rounded-2xl overflow-hidden relative p-1.5 justify-center items-center mb-3">
                   <Image source={{ uri: item.image }} className="w-full h-full" resizeMode="contain" />
                   <View className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#3B82F6]/20 border border-[#3B82F6]/30 rounded-md">
                     <Text className="text-[#3B82F6] text-[8px] font-bold uppercase tracking-wide">
@@ -393,15 +402,15 @@ export default function HomeDashboard() {
                     </Text>
                   </View>
                 </View>
-                <Text className="text-white/50 text-[9px] font-bold uppercase mb-0.5" numberOfLines={1}>
+                <Text style={{ color: theme.textMuted }} className="text-[9px] font-bold uppercase mb-0.5" numberOfLines={1}>
                   {item.brand}
                 </Text>
-                <Text className="text-white font-bold text-xs mb-2 h-8 leading-4" numberOfLines={2}>
+                <Text style={{ color: theme.text }} className="font-bold text-xs mb-2 h-8 leading-4" numberOfLines={2}>
                   {item.name}
                 </Text>
                 <View className="flex-row justify-between items-center mt-1">
-                  <Text className="text-[#2ECC71] font-black text-sm">₹{item.price}</Text>
-                  <ArrowUpRight size={14} color="rgba(255,255,255,0.4)" />
+                  <Text style={{ color: accent.hex }} className="font-black text-sm">₹{item.price}</Text>
+                  <ArrowUpRight size={14} color={theme.textMuted} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -411,8 +420,8 @@ export default function HomeDashboard() {
         {/* Personalized Recommendations Section */}
         <View className="mt-8 px-6">
           <View className="flex-row items-center gap-2 mb-4">
-            <Award size={18} color="#4ADE80" />
-            <Text className="font-extrabold text-white text-base tracking-tight">
+            <Award size={18} color={accent.hex} />
+            <Text style={{ color: theme.text }} className="font-extrabold text-base tracking-tight">
               Recommended For You
             </Text>
           </View>
@@ -421,21 +430,22 @@ export default function HomeDashboard() {
               <TouchableOpacity
                 key={item.upc}
                 onPress={() => router.push(`/product/${item.upc}` as any)}
-                className="flex-row items-center p-4 bg-white/5 border border-white/10 rounded-3xl relative"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="flex-row items-center p-4 border rounded-3xl relative"
               >
-                <View className="w-14 h-14 rounded-2xl bg-white/10 p-1 overflow-hidden border border-white/10 mr-4">
+                <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="w-14 h-14 rounded-2xl p-1 overflow-hidden border mr-4">
                   <Image source={{ uri: item.image }} className="w-full h-full" resizeMode="contain" />
                 </View>
                 <View className="flex-1 justify-center">
-                  <Text className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">
+                  <Text style={{ color: theme.textMuted }} className="text-[9px] font-bold uppercase tracking-widest mb-0.5">
                     {item.brand}
                   </Text>
-                  <Text className="text-white font-bold text-sm leading-5 mb-1" numberOfLines={1}>
+                  <Text style={{ color: theme.text }} className="font-bold text-sm leading-5 mb-1" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text className="text-[#2ECC71] font-black text-sm">₹{item.price.toFixed(0)}</Text>
+                  <Text style={{ color: accent.hex }} className="font-black text-sm">₹{item.price.toFixed(0)}</Text>
                 </View>
-                <ArrowUpRight size={18} color="rgba(255,255,255,0.3)" className="ml-2" />
+                <ArrowUpRight size={18} color={theme.textMuted} className="ml-2" />
               </TouchableOpacity>
             ))}
           </View>
@@ -445,22 +455,24 @@ export default function HomeDashboard() {
         <View className="flex-row gap-3 px-6 mt-8">
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/search" as any)}
-            className="flex-1 flex-row items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+            className="flex-1 flex-row items-center gap-3 p-4 border rounded-2xl"
           >
-            <View className="w-10 h-10 bg-white/5 rounded-xl items-center justify-center">
-              <Search size={18} color="#2ECC71" />
+            <View style={{ backgroundColor: theme.bgCardAlt }} className="w-10 h-10 rounded-xl items-center justify-center">
+              <Search size={18} color={accent.hex} />
             </View>
-            <Text className="text-white font-bold text-sm">Search Catalog</Text>
+            <Text style={{ color: theme.text }} className="font-bold text-sm">Search Catalog</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/watchlist" as any)}
-            className="flex-1 flex-row items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+            className="flex-1 flex-row items-center gap-3 p-4 border rounded-2xl"
           >
-            <View className="w-10 h-10 bg-white/5 rounded-xl items-center justify-center">
+            <View style={{ backgroundColor: theme.bgCardAlt }} className="w-10 h-10 rounded-xl items-center justify-center">
               <Heart size={18} color="#F4A261" />
             </View>
-            <Text className="text-white font-bold text-sm">My Wishlist</Text>
+            <Text style={{ color: theme.text }} className="font-bold text-sm">My Wishlist</Text>
           </TouchableOpacity>
         </View>
 
@@ -469,7 +481,7 @@ export default function HomeDashboard() {
           <View className="mt-8 px-6">
             <View className="flex-row items-center gap-2 mb-4">
               <Sparkles size={16} color="#F4A261" />
-              <Text className="font-extrabold text-white text-base tracking-tight">
+              <Text style={{ color: theme.text }} className="font-extrabold text-base tracking-tight">
                 Top Savings Today
               </Text>
             </View>
@@ -479,28 +491,29 @@ export default function HomeDashboard() {
                 <TouchableOpacity
                   key={deal.id}
                   onPress={() => router.push(`/product/${deal.upc}` as any)}
-                  className="flex-row items-center p-4 bg-white/5 border border-white/10 rounded-3xl relative overflow-hidden"
+                  style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                  className="flex-row items-center p-4 border rounded-3xl relative overflow-hidden"
                 >
-                  <View className="w-16 h-16 rounded-2xl bg-white/10 p-1 overflow-hidden border border-white/10 mr-4">
+                  <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="w-16 h-16 rounded-2xl p-1 overflow-hidden border mr-4">
                     <Image source={{ uri: deal.image }} className="w-full h-full" resizeMode="contain" />
                   </View>
                   <View className="flex-1 justify-center mr-2">
-                    <Text className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-0.5">
+                    <Text style={{ color: theme.textMuted }} className="text-[9px] font-bold uppercase tracking-widest mb-0.5">
                       {deal.brand}
                     </Text>
-                    <Text className="text-white font-bold text-sm leading-5 mb-1.5" numberOfLines={1}>
+                    <Text style={{ color: theme.text }} className="font-bold text-sm leading-5 mb-1.5" numberOfLines={1}>
                       {deal.name}
                     </Text>
                     <View className="flex-row items-center gap-2 flex-wrap">
-                      <Text className="text-[#2ECC71] font-black text-sm">
+                      <Text style={{ color: accent.hex }} className="font-black text-sm">
                         ₹{deal.bestPrice.toFixed(0)}
                       </Text>
-                      <Text className="text-white/40 text-xs">at {deal.store}</Text>
+                      <Text style={{ color: theme.textMuted }} className="text-xs">at {deal.store}</Text>
                     </View>
                   </View>
                   {deal.savingsPercent > 0 && (
-                    <View className="px-2.5 py-1.5 bg-[#2ECC71]/20 rounded-xl border border-[#2ECC71]/30">
-                      <Text className="text-[#2ECC71] font-bold text-xs">-{deal.savingsPercent}%</Text>
+                    <View style={{ backgroundColor: accent.hex + "22", borderColor: accent.hex + "33" }} className="px-2.5 py-1.5 border rounded-xl">
+                      <Text style={{ color: accent.hex }} className="font-bold text-xs">-{deal.savingsPercent}%</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -514,11 +527,11 @@ export default function HomeDashboard() {
           <View className="mt-8 px-6">
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center gap-2">
-                <History size={16} color="rgba(255,255,255,0.5)" />
-                <Text className="font-semibold text-white/70">Recent Scans</Text>
+                <History size={16} color={theme.textMuted} />
+                <Text style={{ color: theme.textMuted }} className="font-semibold">Recent Scans</Text>
               </View>
               <TouchableOpacity onPress={() => router.push("/(tabs)/watchlist" as any)}>
-                <Text className="text-[#2ECC71] text-xs font-bold">View All</Text>
+                <Text style={{ color: accent.hex }} className="text-xs font-bold">View All</Text>
               </TouchableOpacity>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pb-2">
@@ -528,10 +541,10 @@ export default function HomeDashboard() {
                   onPress={() => router.push(`/product/${scan.upc || scan.productId}` as any)}
                   className="w-24 items-center gap-2 mr-4"
                 >
-                  <View className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/10 relative p-1.5 justify-center items-center">
+                  <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="w-24 h-24 rounded-2xl overflow-hidden border relative p-1.5 justify-center items-center">
                     <Image source={{ uri: scan.image }} className="w-full h-full" resizeMode="contain" />
                   </View>
-                  <Text className="text-[10px] text-white/50 w-full text-center" numberOfLines={1}>
+                  <Text style={{ color: theme.textMuted }} className="text-[10px] w-full text-center" numberOfLines={1}>
                     {formatTimeAgo(scan.timestamp)}
                   </Text>
                 </TouchableOpacity>

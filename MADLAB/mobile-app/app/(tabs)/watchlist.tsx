@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, RefreshControl, TextInput, Al
 import { Heart, Plus, X, Save, IndianRupee, Target } from 'lucide-react-native';
 import { useApp } from '../../src/context/AppContext';
 import { WishlistCard } from '../../src/components/WishlistCard';
-
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 
 const EMPTY_MANUAL_PRODUCT = {
   name: '',
@@ -20,6 +20,7 @@ const FALLBACK_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-1583258292688-
 
 export default function WatchlistScreen() {
   const { watchlist, addToWatchlist } = useApp();
+  const { theme, accent, isDark, fontScale } = useAppTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const [manualFormVisible, setManualFormVisible] = useState(watchlist.length === 0);
@@ -78,9 +79,17 @@ export default function WatchlistScreen() {
     return (
       <TouchableOpacity
         onPress={() => setFilter(value)}
-        className={`px-4 py-2 rounded-xl mr-2 ${isActive ? 'bg-[#2ECC71]' : 'bg-white/10'}`}
+        style={{
+          backgroundColor: isActive ? accent.hex : theme.bgCardAlt,
+          borderColor: theme.border,
+          borderWidth: isActive ? 0 : 1
+        }}
+        className="px-4 py-2 rounded-xl mr-2"
       >
-        <Text className={`font-semibold ${isActive ? 'text-[#0A0E15]' : 'text-white'}`}>
+        <Text
+          style={{ color: isActive ? (isDark ? '#0A0E15' : '#FFFFFF') : theme.textMuted }}
+          className="font-semibold"
+        >
           {label}
         </Text>
       </TouchableOpacity>
@@ -154,14 +163,16 @@ export default function WatchlistScreen() {
           timestamp: now,
           price: currentPrice,
           store,
-        },
+        }
       ],
       addedAt: now,
     });
 
+    showToast(`${name} added to wishlist`);
     resetManualForm();
     setManualFormVisible(false);
   };
+
 
   const ManualInput = ({
     label,
@@ -176,27 +187,28 @@ export default function WatchlistScreen() {
     placeholder: string;
     keyboardType?: 'default' | 'numeric' | 'decimal-pad' | 'url';
   }) => (
-    <View className="mb-3">
-      <Text className="text-white/50 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+    <View className="mb-4">
+      <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider mb-1.5">
         {label}
       </Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255,255,255,0.28)"
+        placeholderTextColor={theme.textDim}
         keyboardType={keyboardType}
-        className="w-full bg-black/30 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm font-semibold"
+        style={{ color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+        className="w-full border rounded-2xl px-4 py-3 text-sm font-semibold"
       />
     </View>
   );
 
   return (
-    <View className="flex-1 bg-[#0A0E15]">
+    <View style={{ backgroundColor: theme.bg }} className="flex-1">
 
       <ScrollView 
         className="flex-1"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2ECC71" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={accent.hex} />}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         <View className="px-6 pt-16 pb-6">
@@ -205,34 +217,36 @@ export default function WatchlistScreen() {
           <View className="mb-8">
             <View className="flex-row items-center justify-between gap-3 mb-2">
               <View className="flex-row items-center gap-3 flex-1">
-                <Text className="text-4xl font-black text-white">Wishlist</Text>
-                <View className="px-3 py-1 bg-white/10 rounded-full">
-                  <Text className="text-lg font-bold text-white/70">{totalProducts}</Text>
+                <Text style={{ color: theme.text }} className="text-4xl font-black">Wishlist</Text>
+                <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="px-3 py-1 border rounded-full">
+                  <Text style={{ color: theme.textMuted }} className="text-lg font-bold">{totalProducts}</Text>
                 </View>
               </View>
               <TouchableOpacity
                 onPress={() => setManualFormVisible((visible) => !visible)}
-                className="w-11 h-11 rounded-2xl bg-[#2ECC71] items-center justify-center"
+                style={{ backgroundColor: accent.hex }}
+                className="w-11 h-11 rounded-2xl items-center justify-center"
               >
                 {manualFormVisible ? (
-                  <X size={20} color="#0A0E15" strokeWidth={3} />
+                  <X size={20} color={isDark ? "#0A0E15" : "#FFFFFF"} strokeWidth={3} />
                 ) : (
-                  <Plus size={22} color="#0A0E15" strokeWidth={3} />
+                  <Plus size={22} color={isDark ? "#0A0E15" : "#FFFFFF"} strokeWidth={3} />
                 )}
               </TouchableOpacity>
             </View>
-            <Text className="text-white/50 text-base">Track prices and catch the best deals.</Text>
+            <Text style={{ color: theme.textMuted }} className="text-base">Track prices and catch the best deals.</Text>
           </View>
 
           {manualFormVisible && (
-            <View className="bg-white/5 border border-white/10 rounded-3xl p-4 mb-8">
+            <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="border rounded-3xl p-4 mb-8">
               <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-white text-lg font-bold">Add Product</Text>
+                <Text style={{ color: theme.text }} className="text-lg font-bold">Add Product</Text>
                 <TouchableOpacity
                   onPress={resetManualForm}
-                  className="px-3 py-2 rounded-xl bg-white/10"
+                  style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                  className="px-3 py-2 border rounded-xl"
                 >
-                  <Text className="text-white/70 text-xs font-bold">Clear</Text>
+                  <Text style={{ color: theme.textMuted }} className="text-xs font-bold">Clear</Text>
                 </TouchableOpacity>
               </View>
 
@@ -307,41 +321,40 @@ export default function WatchlistScreen() {
 
               <TouchableOpacity
                 onPress={handleAddManualProduct}
-                className="w-full py-4 bg-[#2ECC71] rounded-2xl flex-row items-center justify-center gap-2 mt-1"
+                style={{ backgroundColor: accent.hex }}
+                className="w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 mt-1"
               >
-                <Save size={18} color="#0A0E15" strokeWidth={3} />
-                <Text className="text-[#0A0E15] font-bold text-sm">Save Product</Text>
+                <Save size={18} color={isDark ? "#0A0E15" : "#FFFFFF"} strokeWidth={3} />
+                <Text style={{ color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-bold text-sm">Save Product</Text>
               </TouchableOpacity>
             </View>
           )}
 
           {/* Savings Highlight */}
           <View className="flex-row gap-4 mb-8">
-            <View className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-4 flex-row items-center gap-4">
-              <View className="w-12 h-12 rounded-2xl bg-[#2ECC71]/20 items-center justify-center">
-                <IndianRupee size={24} color="#2ECC71" />
+            <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="flex-1 border rounded-3xl p-4 flex-row items-center gap-4">
+              <View style={{ backgroundColor: accent.hexLight + "1a" }} className="w-12 h-12 rounded-2xl items-center justify-center">
+                <IndianRupee size={24} color={accent.hex} />
               </View>
               <View>
-                <Text className="text-white/50 text-[10px] font-bold uppercase tracking-wider mb-1">Total Savings</Text>
-                <Text className="text-white font-bold text-xl">₹{potentialSavings.toFixed(0)}</Text>
+                <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider mb-1">Total Savings</Text>
+                <Text style={{ color: theme.text }} className="font-bold text-xl">₹{potentialSavings.toFixed(0)}</Text>
               </View>
             </View>
 
-            <View className="flex-1 bg-white/5 border border-white/10 rounded-3xl p-4 flex-row items-center gap-4">
-              <View className="w-12 h-12 rounded-2xl bg-[#F4A261]/20 items-center justify-center">
+            <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="flex-1 border rounded-3xl p-4 flex-row items-center gap-4">
+              <View className="w-12 h-12 rounded-2xl bg-[#F4A261]/15 items-center justify-center">
                 <Target size={24} color="#F4A261" />
               </View>
               <View>
-                <Text className="text-white/50 text-[10px] font-bold uppercase tracking-wider mb-1">Active Alerts</Text>
-                <Text className="text-white font-bold text-xl">{activeAlerts}</Text>
+                <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider mb-1">Active Alerts</Text>
+                <Text style={{ color: theme.text }} className="font-bold text-xl">{activeAlerts}</Text>
               </View>
             </View>
           </View>
 
           {sanitizedWatchlist.length > 0 ? (
             <>
-
-
               {/* Filter Toolbar */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
                 <FilterButton label="All Items" value="all" />
@@ -352,7 +365,7 @@ export default function WatchlistScreen() {
               {/* Items List */}
               {filteredWatchlist.length === 0 ? (
                 <View className="items-center justify-center py-10">
-                  <Text className="text-white/50">No items match this filter.</Text>
+                  <Text style={{ color: theme.textMuted }}>No items match this filter.</Text>
                 </View>
               ) : (
                 <View>
@@ -366,30 +379,31 @@ export default function WatchlistScreen() {
             /* Empty State */
             <View className="items-center justify-center py-16">
               <View className="w-40 h-40 mb-6 items-center justify-center">
-                <View className="absolute inset-0 bg-[#F4A261]/20 rounded-full" />
+                <View className="absolute inset-0 bg-[#F4A261]/10 rounded-full" />
                 <Heart size={80} color="rgba(244,162,97,0.5)" strokeWidth={1} />
               </View>
-              <Text className="text-2xl font-bold text-white mb-2">Wishlist is Empty</Text>
-              <Text className="text-white/50 text-center mb-8 px-6">
+              <Text style={{ color: theme.text }} className="text-2xl font-bold mb-2">Wishlist is Empty</Text>
+              <Text style={{ color: theme.textMuted }} className="text-center mb-8 px-6">
                 Add a product manually to start tracking its price.
               </Text>
               <TouchableOpacity
                 onPress={() => setManualFormVisible(true)}
-                className="bg-[#2ECC71] px-8 py-4 rounded-2xl flex-row items-center gap-2"
+                style={{ backgroundColor: accent.hex }}
+                className="px-8 py-4 rounded-2xl flex-row items-center gap-2"
               >
-                <Plus size={20} color="#0A0E15" strokeWidth={3} />
-                <Text className="text-[#0A0E15] font-bold text-lg">Add Product</Text>
+                <Plus size={20} color={isDark ? "#0A0E15" : "#FFFFFF"} strokeWidth={3} />
+                <Text style={{ color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-bold text-lg">Add Product</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       </ScrollView>
       {toastMessage && (
-        <View className="absolute bottom-10 left-6 right-6 bg-[#111827] border border-white/10 rounded-2xl p-4 flex-row items-center gap-3 shadow-2xl z-50">
-          <View className="w-5 h-5 rounded-full bg-[#2ECC71]/20 items-center justify-center">
-            <Text className="text-[10px] text-[#2ECC71] font-bold">✓</Text>
+        <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="absolute bottom-10 left-6 right-6 border rounded-2xl p-4 flex-row items-center gap-3 shadow-2xl z-50">
+          <View style={{ backgroundColor: accent.hexLight + "1a" }} className="w-5 h-5 rounded-full items-center justify-center">
+            <Text style={{ color: accent.hex }} className="text-[10px] font-bold">✓</Text>
           </View>
-          <Text className="text-white text-sm font-semibold flex-1">{toastMessage}</Text>
+          <Text style={{ color: theme.text }} className="text-sm font-semibold flex-1">{toastMessage}</Text>
         </View>
       )}
     </View>

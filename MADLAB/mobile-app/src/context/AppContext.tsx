@@ -1,6 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  deleteUser,
+} from "firebase/auth";
+import { auth } from "../config/firebase";
 import type { AppState, ScanHistoryItem, WatchlistItem, UserSettings, User, SearchHistoryItem } from "../types";
+import { themeSignal } from "../utils/themeSignal";
 
 interface AppContextType extends AppState {
   addToHistory: (item: ScanHistoryItem) => void;
@@ -10,13 +20,15 @@ interface AppContextType extends AppState {
   removeFromWatchlist: (id: string) => void;
   updateWatchlistItem: (id: string, updates: Partial<WatchlistItem>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
-  login: (user: User) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   addToSearchHistory: (query: string, resultsCount: number) => void;
   clearSearchHistory: () => void;
-  updateUserProfile: (profile: Partial<User>) => void;
-  deleteAccount: () => void;
+  updateUserProfile: (profile: Partial<User>) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   clearWatchlist: () => void;
+  isAuthLoading: boolean;
 }
 
 const defaultSettings: UserSettings = {
@@ -62,22 +74,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isReady, setIsReady] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   // Load data from AsyncStorage on mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("verity_user");
         const storedHistory = await AsyncStorage.getItem("verity_history");
         const storedWatchlist = await AsyncStorage.getItem("verity_watchlist");
         const storedSettings = await AsyncStorage.getItem("verity_settings");
         const storedSearchHistory = await AsyncStorage.getItem("verity_search_history");
-
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setIsAuthenticated(true);
-        }
 
         if (storedHistory) {
           setScanHistory(JSON.parse(storedHistory));
@@ -89,7 +95,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         if (storedSettings) {
-          setSettings({ ...defaultSettings, ...JSON.parse(storedSettings) });
+          const parsed = JSON.parse(storedSettings);
+          const cleanedThemeMode = (parsed.themeMode === "light" || parsed.themeMode === "dark") ? parsed.themeMode : "dark";
+          setSettings({ ...defaultSettings, ...parsed, themeMode: cleanedThemeMode });
+          themeSignal.emit(cleanedThemeMode);
+        } else {
+          themeSignal.emit(defaultSettings.themeMode === "light" ? "light" : "dark");
         }
 
         if (storedSearchHistory) {
@@ -103,6 +114,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     
     loadData();
+
+    // Dynamically synchronize authentication status with Firebase
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+          email: firebaseUser.email || "",
+        });
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setIsAuthLoading(false);
+    });
+
+    return () => unsubscribeAuth();
   }, []);
 
   // Persist data to AsyncStorage (only after initial load has finished)
@@ -173,21 +202,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      if (newSettings.themeMode && (newSettings.themeMode === "light" || newSettings.themeMode === "dark")) {
+        themeSignal.emit(newSettings.themeMode);
+      }
+      return updated;
+    });
   };
 
-  const login = (userData: User) => {
-    setUser(userData);
-    setIsAuthenticated(true);
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const logout = () => {
+  const signup = async (name: string, email: string, password: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+      await updateProfile(userCredential.user, { displayName: name });
+      setUser({
+        id: userCredential.user.uid,
+        name: name,
+        email: email,
+      });
+      setIsAuthenticated(true);
+    }
+  };
+
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
     setIsAuthenticated(false);
     setScanHistory([]);
     setWatchlist([]);
     setSettings(defaultSettings);
-    AsyncStorage.clear();
+    await AsyncStorage.clear();
   };
 
   const addToSearchHistory = (query: string, resultsCount: number) => {
@@ -209,17 +257,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSearchHistory([]);
   };
 
-  const updateUserProfile = (profile: Partial<User>) => {
-    setUser((prev) => prev ? { ...prev, ...profile } : null);
+  const updateUserProfile = async (profile: Partial<User>) => {
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      if (profile.name) {
+        await updateProfile(firebaseUser, { displayName: profile.name });
+      }
+      setUser((prev) => prev ? { ...prev, ...profile } : null);
+    }
   };
 
-  const deleteAccount = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setScanHistory([]);
-    setWatchlist([]);
-    setSettings(defaultSettings);
-    AsyncStorage.clear();
+  const deleteAccount = async () => {
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      await deleteUser(firebaseUser);
+      setUser(null);
+      setIsAuthenticated(false);
+      setScanHistory([]);
+      setWatchlist([]);
+      setSettings(defaultSettings);
+      await AsyncStorage.clear();
+    }
   };
 
   const clearWatchlist = () => {
@@ -241,12 +299,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateWatchlistItem,
     updateSettings,
     login,
+    signup,
     logout,
     addToSearchHistory,
     clearSearchHistory,
     updateUserProfile,
     deleteAccount,
     clearWatchlist,
+    isAuthLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

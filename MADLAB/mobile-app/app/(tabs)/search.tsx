@@ -20,6 +20,7 @@ import RecentSearches from "@/components/search/RecentSearches";
 import TrendingSearches from "@/components/search/TrendingSearches";
 import CategoryFilters from "@/components/search/CategoryFilters";
 import type { Product } from "@/src/types";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 type ScreenState = "idle" | "searching" | "results" | "no_results";
 
@@ -27,6 +28,7 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
+  const { theme, accent, isDark } = useAppTheme();
 
   const {
     query,
@@ -85,7 +87,8 @@ export default function SearchScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0A0E15]"
+      style={{ backgroundColor: theme.bg }}
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       {/* Background Glows (Web/Desktop) */}
@@ -106,16 +109,16 @@ export default function SearchScreen() {
         style={{ opacity: fadeAnim }}
       >
         <View className="flex-row items-center gap-2.5">
-          <View className="w-8 h-8 rounded-xl bg-[#2ECC71]/15 items-center justify-center">
-            <SearchIcon size={16} color="#2ECC71" />
+          <View style={{ backgroundColor: accent.hexLight + "1c" }} className="w-8 h-8 rounded-xl items-center justify-center">
+            <SearchIcon size={16} color={accent.hex} />
           </View>
-          <Text className="text-[24px] font-bold text-white tracking-tight">
+          <Text style={{ color: theme.text }} className="text-[24px] font-bold tracking-tight">
             Search
           </Text>
         </View>
         {query.trim().length > 0 && screenState === "results" && (
-          <View className="px-3 py-1.5 bg-[#2ECC71]/10 rounded-lg">
-            <Text className="text-[11px] text-[#2ECC71] font-bold">
+          <View style={{ backgroundColor: accent.hexLight + "1c" }} className="px-3 py-1.5 rounded-lg">
+            <Text style={{ color: accent.hex }} className="text-[11px] font-bold">
               {results.length} found
             </Text>
           </View>
@@ -163,8 +166,11 @@ export default function SearchScreen() {
                 Keyboard.dismiss();
               }}
             >
-              <View className="mr-2 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08]">
-                <Text className="text-[11px] text-white/60 font-semibold" numberOfLines={1}>
+              <View
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="mr-2 px-3 py-2 rounded-xl border"
+              >
+                <Text style={{ color: theme.textMuted }} className="text-[11px] font-semibold" numberOfLines={1}>
                   {suggestion}
                 </Text>
               </View>
@@ -207,7 +213,7 @@ export default function SearchScreen() {
               )}
 
               {/* Empty state if no recents */}
-              {recentSearches.length === 0 && <EmptyIdle />}
+              {recentSearches.length === 0 && <EmptyIdle theme={theme} accent={accent} insets={insets} />}
             </ScrollView>
           )}
 
@@ -229,7 +235,7 @@ export default function SearchScreen() {
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               ListHeaderComponent={
-                <ResultsHeader count={results.length} query={query} />
+                <ResultsHeader count={results.length} query={query} theme={theme} />
               }
               contentContainerStyle={{
                 paddingTop: 4,
@@ -239,7 +245,7 @@ export default function SearchScreen() {
           )}
 
           {/* ═══ NO RESULTS ═══ */}
-          {screenState === "no_results" && <EmptyResults query={query} />}
+          {screenState === "no_results" && <EmptyResults query={query} theme={theme} />}
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -248,27 +254,27 @@ export default function SearchScreen() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ResultsHeader({ count, query }: { count: number; query: string }) {
+function ResultsHeader({ count, query, theme }: { count: number; query: string; theme: any }) {
   return (
     <View className="px-5 py-2.5 mb-1">
-      <Text className="text-[12px] text-white/30">
+      <Text style={{ color: theme.textDim }} className="text-[12px]">
         {count} result{count !== 1 ? "s" : ""} for{" "}
-        <Text className="text-white/60 font-semibold">{`"${query}"`}</Text>
+        <Text style={{ color: theme.textMuted }} className="font-semibold">{`"${query}"`}</Text>
       </Text>
     </View>
   );
 }
 
-function EmptyIdle() {
+function EmptyIdle({ theme, accent, insets }: { theme: any; accent: any; insets: any }) {
   return (
     <View className="flex-1 items-center justify-center px-10 pt-16 gap-4">
-      <View className="w-24 h-24 rounded-3xl bg-[#2ECC71]/8 items-center justify-center mb-3">
-        <ScanBarcode size={40} color="rgba(46,204,113,0.4)" />
+      <View style={{ backgroundColor: accent.hexLight + "1c" }} className="w-24 h-24 rounded-3xl items-center justify-center mb-3">
+        <ScanBarcode size={40} color={accent.hex} style={{ opacity: 0.8 }} />
       </View>
-      <Text className="text-[18px] font-bold text-white text-center">
+      <Text style={{ color: theme.text }} className="text-[18px] font-bold text-center">
         Find any product
       </Text>
-      <Text className="text-[13px] text-white/40 text-center leading-5">
+      <Text style={{ color: theme.textMuted }} className="text-[13px] text-center leading-5">
         Search by name, brand, model, or scan a barcode{"\n"}on the Home tab for instant price comparisons.
       </Text>
 
@@ -277,10 +283,10 @@ function EmptyIdle() {
         {["Headphones", "Watch", "Speaker", "Coffee Maker"].map((chip) => (
           <View
             key={chip}
-            className="px-4 py-2 rounded-xl border border-white/[0.06]"
-            style={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+            style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+            className="px-4 py-2 rounded-xl border"
           >
-            <Text className="text-[12px] text-white/30 font-medium">{chip}</Text>
+            <Text style={{ color: theme.textDim }} className="text-[12px] font-medium">{chip}</Text>
           </View>
         ))}
       </View>
@@ -288,16 +294,16 @@ function EmptyIdle() {
   );
 }
 
-function EmptyResults({ query }: { query: string }) {
+function EmptyResults({ query, theme }: { query: string; theme: any }) {
   return (
     <View className="flex-1 items-center justify-center px-10 pt-12 gap-4">
-      <View className="w-20 h-20 rounded-3xl bg-[#F4A261]/8 items-center justify-center mb-2">
-        <SearchIcon size={32} color="rgba(244,162,97,0.4)" />
+      <View className="w-20 h-20 rounded-3xl bg-[#F4A261]/10 items-center justify-center mb-2">
+        <SearchIcon size={32} color="#F4A261" style={{ opacity: 0.8 }} />
       </View>
-      <Text className="text-[18px] font-bold text-white text-center">
+      <Text style={{ color: theme.text }} className="text-[18px] font-bold text-center">
         {`No results for "${query}"`}
       </Text>
-      <Text className="text-[13px] text-white/40 text-center leading-5">
+      <Text style={{ color: theme.textMuted }} className="text-[13px] text-center leading-5">
         Try a different spelling, a shorter term,{"\n"}or scan the barcode directly on the Home tab.
       </Text>
     </View>

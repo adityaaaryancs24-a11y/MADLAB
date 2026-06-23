@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { ChevronRight, TrendingDown } from "lucide-react-native";
 import { getMockPrices } from "@/src/utils/mockData";
 import type { Product } from "@/src/types";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 type Props = {
   product: Product;
@@ -20,6 +21,7 @@ type Props = {
 export default function ProductCard({ product, index = 0, onPress }: Props) {
   const router = useRouter();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { theme, accent } = useAppTheme();
 
   // Get prices to show best deal
   const prices = getMockPrices(product.id);
@@ -72,14 +74,18 @@ export default function ProductCard({ product, index = 0, onPress }: Props) {
       activeOpacity={1}
     >
       <Animated.View
-        className="flex-row items-center mx-5 mb-3 p-4 rounded-2xl border border-white/[0.06]"
+        className="flex-row items-center mx-5 mb-3 p-4 rounded-2xl border"
         style={{
           transform: [{ scale: scaleAnim }],
-          backgroundColor: "rgba(255,255,255,0.04)",
+          backgroundColor: theme.bgCard,
+          borderColor: theme.border,
         }}
       >
         {/* Thumbnail */}
-        <View className="w-[60px] h-[60px] rounded-xl overflow-hidden items-center justify-center bg-white/[0.06] mr-4">
+        <View
+          style={{ backgroundColor: theme.bgCardAlt }}
+          className="w-[60px] h-[60px] rounded-xl overflow-hidden items-center justify-center mr-4"
+        >
           {product.image ? (
             <Image
               source={{ uri: product.image }}
@@ -93,19 +99,26 @@ export default function ProductCard({ product, index = 0, onPress }: Props) {
 
         {/* Info */}
         <View className="flex-1 mr-3">
-          <Text className="text-[11px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">
+          <Text
+            style={{ color: theme.textMuted }}
+            className="text-[11px] uppercase tracking-wider font-semibold mb-0.5"
+          >
             {product.brand}
           </Text>
-          <Text className="text-[14px] font-semibold text-white leading-5" numberOfLines={2}>
+          <Text
+            style={{ color: theme.text }}
+            className="text-[14px] font-semibold leading-5"
+            numberOfLines={2}
+          >
             {product.name}
           </Text>
           <View className="flex-row items-center gap-2 mt-1.5">
-            <View className="px-2 py-0.5 bg-[#2ECC71]/10 rounded-md">
-              <Text className="text-[10px] text-[#2ECC71] font-bold">
+            <View style={{ backgroundColor: accent.hexLight + "1c" }} className="px-2 py-0.5 rounded-md">
+              <Text style={{ color: accent.hex }} className="text-[10px] font-bold">
                 {product.category}
               </Text>
             </View>
-            <Text className="text-[10px] text-white/30">
+            <Text style={{ color: theme.textDim }} className="text-[10px]">
               {retailerCount} retailer{retailerCount !== 1 ? "s" : ""}
             </Text>
           </View>
@@ -114,25 +127,25 @@ export default function ProductCard({ product, index = 0, onPress }: Props) {
         {/* Price Column */}
         <View className="items-end gap-1 min-w-[72px]">
           {bestPrice?.price != null && (
-            <Text className="text-[16px] font-bold text-white">
+            <Text style={{ color: theme.text }} className="text-[16px] font-bold">
               ₹{bestPrice.price.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </Text>
           )}
           {savingsPercent > 0 && (
-            <View className="flex-row items-center gap-1 px-2 py-0.5 bg-[#2ECC71]/10 rounded-md">
-              <TrendingDown size={10} color="#2ECC71" />
-              <Text className="text-[10px] text-[#2ECC71] font-bold">
+            <View style={{ backgroundColor: accent.hexLight + "1c" }} className="flex-row items-center gap-1 px-2 py-0.5 rounded-md">
+              <TrendingDown size={10} color={accent.hex} />
+              <Text style={{ color: accent.hex }} className="text-[10px] font-bold">
                 Save {savingsPercent}%
               </Text>
             </View>
           )}
-          <Text className="text-[9px] text-white/25" numberOfLines={1}>
+          <Text style={{ color: theme.textDim }} className="text-[9px]" numberOfLines={1}>
             {bestPrice?.store ?? "N/A"}
           </Text>
         </View>
 
         {/* Chevron */}
-        <ChevronRight size={16} color="rgba(255,255,255,0.15)" style={{ marginLeft: 4 }} />
+        <ChevronRight size={16} color={theme.textDim} style={{ marginLeft: 4 }} />
       </Animated.View>
     </TouchableOpacity>
   );

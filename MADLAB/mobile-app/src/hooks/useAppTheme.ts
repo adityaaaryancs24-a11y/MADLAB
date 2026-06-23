@@ -2,43 +2,24 @@ import { useColorScheme } from "react-native";
 import { useApp } from "../context/AppContext";
 
 // ── Accent palettes ────────────────────────────────────────────────────────────
-const ACCENT_PALETTES = {
-  emerald: {
-    hex: "#2ECC71",
-    hexLight: "#4ADE80",
-    bg: "bg-[#2ECC71]",
-    bgLight: "bg-[#2ECC71]/10",
-    text: "text-[#2ECC71]",
-    border: "border-[#2ECC71]",
-    borderLight: "border-[#2ECC71]/20",
-  },
-  blue: {
-    hex: "#3B82F6",
-    hexLight: "#60A5FA",
-    bg: "bg-[#3B82F6]",
-    bgLight: "bg-[#3B82F6]/10",
-    text: "text-[#3B82F6]",
-    border: "border-[#3B82F6]",
-    borderLight: "border-[#3B82F6]/20",
-  },
-  orange: {
-    hex: "#F4A261",
-    hexLight: "#FB923C",
-    bg: "bg-[#F4A261]",
-    bgLight: "bg-[#F4A261]/10",
-    text: "text-[#F4A261]",
-    border: "border-[#F4A261]",
-    borderLight: "border-[#F4A261]/20",
-  },
-  purple: {
-    hex: "#8B5CF6",
-    hexLight: "#A78BFA",
-    bg: "bg-[#8B5CF6]",
-    bgLight: "bg-[#8B5CF6]/10",
-    text: "text-[#8B5CF6]",
-    border: "border-[#8B5CF6]",
-    borderLight: "border-[#8B5CF6]/20",
-  },
+const DARK_ACCENT = {
+  hex: "#2ECC71",
+  hexLight: "#4ADE80",
+  bg: "bg-[#2ECC71]",
+  bgLight: "bg-[#2ECC71]/10",
+  text: "text-[#2ECC71]",
+  border: "border-[#2ECC71]",
+  borderLight: "border-[#2ECC71]/20",
+} as const;
+
+const LIGHT_ACCENT = {
+  hex: "#16A34A",
+  hexLight: "#22C55E",
+  bg: "bg-[#16A34A]",
+  bgLight: "bg-[#16A34A]/10",
+  text: "text-[#16A34A]",
+  border: "border-[#16A34A]",
+  borderLight: "border-[#16A34A]/20",
 } as const;
 
 // ── Theme palettes ─────────────────────────────────────────────────────────────
@@ -85,20 +66,15 @@ const FONT_SCALE = {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useAppTheme() {
   const { settings } = useApp();
-  const systemColorScheme = useColorScheme(); // "light" | "dark" | null
 
   // Resolve effective theme
-  const effectiveTheme: "dark" | "light" = (() => {
-    if (settings.themeMode === "light") return "light";
-    if (settings.themeMode === "dark") return "dark";
-    // system
-    return systemColorScheme === "light" ? "light" : "dark";
-  })();
+  const effectiveTheme: "dark" | "light" = (settings && settings.themeMode === "light") ? "light" : "dark";
 
   const isDark = effectiveTheme === "dark";
   const theme = isDark ? DARK_THEME : LIGHT_THEME;
-  const accent = ACCENT_PALETTES[settings.accentColor] ?? ACCENT_PALETTES.emerald;
-  const fontScale = FONT_SCALE[settings.fontSize] ?? 1.0;
+  const accent = isDark ? DARK_ACCENT : LIGHT_ACCENT;
+  const fontSizeKey = (settings && settings.fontSize && FONT_SCALE[settings.fontSize]) ? settings.fontSize : "medium";
+  const fontScale = FONT_SCALE[fontSizeKey];
 
   return {
     isDark,

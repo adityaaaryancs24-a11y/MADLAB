@@ -40,6 +40,7 @@ import * as Speech from "expo-speech";
 import { BackendProduct, productService } from "../../services/productService";
 import { NativePriceChart } from "../../src/components/NativePriceChart";
 import { useApp } from "../../src/context/AppContext";
+import { useAppTheme } from "../../src/hooks/useAppTheme";
 import { getProductsByCategory, getSimilarProducts, mockProducts } from "../../src/utils/mockData";
 
 const { width } = Dimensions.get("window");
@@ -50,8 +51,20 @@ function formatCurrency(value: number) {
 }
 
 function formatHistoryDate(point: BackendProduct["price_history"][number]) {
-  const rawDate = point.date || point.recorded_at;
-  return new Date(rawDate).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (point.recorded_at) {
+    const d = new Date(point.recorded_at);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+  }
+  if (point.date) {
+    const d = new Date(point.date);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    return point.date;
+  }
+  return "N/A";
 }
 
 export default function ProductDetailScreen() {
@@ -60,6 +73,7 @@ export default function ProductDetailScreen() {
   console.log("PRODUCT JSON:", productJson);
   const insets = useSafeAreaInsets();
   const { addToWatchlist, watchlist, removeFromWatchlist, settings } = useApp();
+  const { isDark, theme, accent } = useAppTheme();
 
   const [product, setProduct] = useState<BackendProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,27 +186,28 @@ export default function ProductDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-[#0A0E15] items-center justify-center">
-        <ActivityIndicator size="large" color="#4ADE80" />
-        <Text className="text-white/60 mt-4 font-semibold text-sm">Loading product details...</Text>
+      <View style={{ backgroundColor: theme.bg }} className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={accent.hex} />
+        <Text style={{ color: theme.textMuted }} className="mt-4 font-semibold text-sm">Loading product details...</Text>
       </View>
     );
   }
 
   if (error || !product) {
     return (
-      <View className="flex-1 bg-[#0A0E15] items-center justify-center px-6">
+      <View style={{ backgroundColor: theme.bg }} className="flex-1 items-center justify-center px-6">
         <XCircle size={48} color="#EF4444" />
-        <Text className="text-white text-xl font-bold mt-4 mb-2">Oops!</Text>
-        <Text className="text-white/60 text-center mb-8">{error || "Product not found"}</Text>
+        <Text style={{ color: theme.text }} className="text-xl font-bold mt-4 mb-2">Oops!</Text>
+        <Text style={{ color: theme.textMuted }} className="text-center mb-8">{error || "Product not found"}</Text>
         <TouchableOpacity
           onPress={() => {
             if (error) fetchProduct();
             else router.back();
           }}
-          className="w-full py-4 bg-[#4ADE80] rounded-2xl items-center shadow-lg shadow-[#4ADE80]/15"
+          style={{ backgroundColor: accent.hex }}
+          className="w-full py-4 rounded-2xl items-center shadow-lg"
         >
-          <Text className="text-[#0A0E15] font-bold text-base">{error ? "Retry" : "Go Back"}</Text>
+          <Text style={{ color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-bold text-base">{error ? "Retry" : "Go Back"}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -270,12 +285,12 @@ export default function ProductDetailScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#0A0E15]">
+    <View style={{ backgroundColor: theme.bg }} className="flex-1">
       <Animated.View
-        style={[styles.header, { paddingTop: insets.top }, headerOpacityStyle]}
-        className="absolute top-0 left-0 right-0 z-50 bg-[#0A0E15]/95 border-b border-white/5"
+        style={[styles.header, { paddingTop: insets.top, backgroundColor: isDark ? "rgba(10,14,21,0.95)" : "rgba(245,247,250,0.95)", borderBottomColor: theme.border }, headerOpacityStyle]}
+        className="absolute top-0 left-0 right-0 z-50 border-b"
       >
-        <Text className="text-white font-bold text-lg text-center mt-2" numberOfLines={1}>
+        <Text style={{ color: theme.text }} className="font-bold text-lg text-center mt-2" numberOfLines={1}>
           {product.name}
         </Text>
       </Animated.View>
@@ -286,15 +301,17 @@ export default function ProductDetailScreen() {
       >
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 rounded-full bg-black/40 items-center justify-center border border-white/10"
+          style={{ backgroundColor: isDark ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.7)", borderColor: theme.border }}
+          className="w-10 h-10 rounded-full items-center justify-center border"
         >
-          <ArrowLeft size={20} color="white" />
+          <ArrowLeft size={20} color={theme.text} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleShare}
-          className="w-10 h-10 rounded-full bg-black/40 items-center justify-center border border-white/10"
+          style={{ backgroundColor: isDark ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.7)", borderColor: theme.border }}
+          className="w-10 h-10 rounded-full items-center justify-center border"
         >
-          <Share2 size={18} color="white" />
+          <Share2 size={18} color={theme.text} />
         </TouchableOpacity>
       </View>
 
@@ -304,7 +321,7 @@ export default function ProductDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <Animated.View style={[styles.heroContainer, heroAnimatedStyle]}>
+        <Animated.View style={[styles.heroContainer, { backgroundColor: theme.bgCard }, heroAnimatedStyle]}>
           <Animated.Image
             entering={FadeIn.duration(800)}
             source={{ uri: product.image }}
@@ -313,15 +330,15 @@ export default function ProductDetailScreen() {
           />
         </Animated.View>
 
-        <View className="px-6 -mt-10 pt-8 bg-[#0A0E15] rounded-t-[40px]">
+        <View style={{ backgroundColor: theme.bg }} className="px-6 -mt-10 pt-8 rounded-t-[40px]">
           <View className="flex-row items-center gap-3 mb-4 flex-wrap">
-            <View className="bg-white/10 px-3 py-1 rounded-full border border-white/5">
-              <Text className="text-white/60 text-[10px] font-bold tracking-widest uppercase">
+            <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="px-3 py-1 rounded-full border">
+              <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold tracking-widest uppercase">
                 {product.category || "General"}
               </Text>
             </View>
-            <View className="bg-[#4ADE80]/10 px-3 py-1 rounded-full border border-[#4ADE80]/20">
-              <Text className="text-[#4ADE80] text-[10px] font-bold tracking-widest font-mono">
+            <View style={{ backgroundColor: isDark ? "rgba(74, 222, 128, 0.1)" : "rgba(22, 163, 74, 0.1)", borderColor: isDark ? "rgba(74, 222, 128, 0.2)" : "rgba(22, 163, 74, 0.2)" }} className="px-3 py-1 rounded-full border">
+              <Text style={{ color: accent.hex }} className="text-[10px] font-bold tracking-widest font-mono">
                 UPC: {product.upc}
               </Text>
             </View>
@@ -342,15 +359,15 @@ export default function ProductDetailScreen() {
 
           <Animated.Text
             entering={FadeInDown.delay(100).springify()}
-            style={{ fontSize: 14 * fontScale }}
-            className="text-white/60 font-bold uppercase tracking-wider mb-1"
+            style={{ fontSize: 14 * fontScale, color: theme.textMuted }}
+            className="font-bold uppercase tracking-wider mb-1"
           >
             {product.brand}
           </Animated.Text>
           <Animated.Text
             entering={FadeInDown.delay(150).springify()}
-            style={{ fontSize: 30 * fontScale }}
-            className="text-white font-black leading-tight mb-8"
+            style={{ fontSize: 30 * fontScale, color: theme.text }}
+            className="font-black leading-tight mb-8"
           >
             {product.name}
           </Animated.Text>
@@ -358,14 +375,16 @@ export default function ProductDetailScreen() {
           <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-row gap-3 mb-8">
             <TouchableOpacity
               onPress={handleWatchlistToggle}
-              className={`flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2 ${
-                isSaved 
-                  ? (settings.highContrast ? "bg-[#4ADE80]/15 border-[#4ADE80]/60" : "bg-[#4ADE80]/10 border-[#4ADE80]/30") 
-                  : (settings.highContrast ? "bg-white/5 border-white/35" : "bg-white/5 border-white/5")
-              }`}
+              style={{
+                backgroundColor: isSaved ? (isDark ? "rgba(46, 204, 113, 0.1)" : "rgba(22, 163, 74, 0.1)") : theme.bgCardAlt,
+                borderColor: isSaved 
+                  ? (settings.highContrast ? (isDark ? "rgba(46, 204, 113, 0.6)" : "rgba(22, 163, 74, 0.6)") : (isDark ? "rgba(46, 204, 113, 0.3)" : "rgba(22, 163, 74, 0.3)")) 
+                  : (settings.highContrast ? theme.borderStrong : theme.border)
+              }}
+              className="flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2"
             >
-              <Heart size={18} color={isSaved ? "#4ADE80" : "white"} fill={isSaved ? "#4ADE80" : "transparent"} />
-              <Text style={{ fontSize: 14 * fontScale }} className={`font-bold ${isSaved ? "text-[#4ADE80]" : "text-white"}`}>
+              <Heart size={18} color={isSaved ? accent.hex : theme.text} fill={isSaved ? accent.hex : "transparent"} />
+              <Text style={{ fontSize: 14 * fontScale, color: isSaved ? accent.hex : theme.text }} className="font-bold">
                 {isSaved ? "Saved" : "Save"}
               </Text>
             </TouchableOpacity>
@@ -376,40 +395,41 @@ export default function ProductDetailScreen() {
                 }
                 setAlertEnabled((enabled) => !enabled);
               }}
-              className={`flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2 ${
-                alertEnabled 
-                  ? "bg-[#4ADE80] border-[#4ADE80]" 
-                  : (settings.highContrast ? "bg-white/5 border-white/35" : "bg-white/5 border-white/5")
-              }`}
+              style={{
+                backgroundColor: alertEnabled ? accent.hex : theme.bgCardAlt,
+                borderColor: alertEnabled ? accent.hex : (settings.highContrast ? theme.borderStrong : theme.border)
+              }}
+              className="flex-1 py-4 rounded-2xl border flex-row items-center justify-center gap-2"
             >
-              <Bell size={18} color={alertEnabled ? "#0A0E15" : "white"} fill={alertEnabled ? "#0A0E15" : "transparent"} />
-              <Text style={{ fontSize: 14 * fontScale }} className={`font-bold ${alertEnabled ? "text-[#0A0E15]" : "text-white"}`}>Alerts</Text>
+              <Bell size={18} color={alertEnabled ? (isDark ? "#0A0E15" : "#FFFFFF") : theme.text} fill={alertEnabled ? (isDark ? "#0A0E15" : "#FFFFFF") : "transparent"} />
+              <Text style={{ fontSize: 14 * fontScale, color: alertEnabled ? (isDark ? "#0A0E15" : "#FFFFFF") : theme.text }} className="font-bold">Alerts</Text>
             </TouchableOpacity>
           </Animated.View>
 
           {pricing.sortedPrices.length > 0 && (
             <Animated.View
               entering={FadeInDown.delay(250).springify()}
-              className="bg-[#4ADE80] rounded-3xl p-1 mb-8 shadow-lg shadow-[#4ADE80]/20"
+              style={{ backgroundColor: accent.hex }}
+              className="rounded-3xl p-1 mb-8 shadow-lg"
             >
-              <View className={`bg-[#0A0E15] rounded-[22px] p-5 ${settings.highContrast ? 'border border-[#4ADE80]' : ''}`}>
+              <View style={{ backgroundColor: theme.bgCard, borderColor: settings.highContrast ? accent.hex : "transparent" }} className="rounded-[22px] p-5 border">
                 <View className="flex-row justify-between items-start mb-4 gap-4">
                   <View className="flex-1">
                     <View className="flex-row items-center gap-1.5 mb-1.5">
-                      <Tag size={14} color="#4ADE80" />
-                      <Text style={{ fontSize: 12 * fontScale }} className="text-[#4ADE80] font-black uppercase tracking-wider">
+                      <Tag size={14} color={accent.hex} />
+                      <Text style={{ fontSize: 12 * fontScale, color: accent.hex }} className="font-black uppercase tracking-wider">
                         Best Price Found
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 30 * fontScale }} className="text-white font-black">{formatCurrency(pricing.lowestPrice)}</Text>
+                    <Text style={{ fontSize: 30 * fontScale, color: theme.text }} className="font-black">{formatCurrency(pricing.lowestPrice)}</Text>
                   </View>
                   <View className="items-end flex-1">
-                    <Text style={{ fontSize: 12 * fontScale }} className="text-white/40 font-semibold mb-1" numberOfLines={1}>
+                    <Text style={{ fontSize: 12 * fontScale, color: theme.textMuted }} className="font-semibold mb-1" numberOfLines={1}>
                       at {pricing.bestPrice?.store ?? pricing.bestPrice?.retailer ?? "Verity"}
                     </Text>
                     {pricing.maxSavings > 0 && (
-                      <View className="bg-[#4ADE80]/20 px-2 py-1 rounded-md">
-                        <Text style={{ fontSize: 12 * fontScale }} className="text-[#4ADE80] font-bold">
+                      <View style={{ backgroundColor: isDark ? "rgba(46, 204, 113, 0.2)" : "rgba(22, 163, 74, 0.2)" }} className="px-2 py-1 rounded-md">
+                        <Text style={{ fontSize: 12 * fontScale, color: accent.hex }} className="font-bold">
                           Save {pricing.savingsPercent.toFixed(0)}%
                         </Text>
                       </View>
@@ -419,9 +439,10 @@ export default function ProductDetailScreen() {
                 {pricing.bestPrice?.url && (
                   <TouchableOpacity
                     onPress={() => Linking.openURL(pricing.bestPrice!.url!)}
-                    className="w-full bg-[#4ADE80] py-3.5 rounded-xl items-center"
+                    style={{ backgroundColor: accent.hex }}
+                    className="w-full py-3.5 rounded-xl items-center"
                   >
-                    <Text style={{ fontSize: 14 * fontScale }} className="text-[#0A0E15] font-black uppercase tracking-wide">Buy Now</Text>
+                    <Text style={{ fontSize: 14 * fontScale, color: isDark ? "#0A0E15" : "#FFFFFF" }} className="font-black uppercase tracking-wide">Buy Now</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -430,7 +451,7 @@ export default function ProductDetailScreen() {
 
           {displayPrices.length > 1 && (
             <Animated.View entering={FadeInDown.delay(300).springify()} className="mb-8">
-              <Text style={{ fontSize: 12 * fontScale }} className="text-white/60 font-bold uppercase tracking-wider mb-4 px-1">
+              <Text style={{ fontSize: 12 * fontScale, color: theme.textMuted }} className="font-bold uppercase tracking-wider mb-4 px-1">
                 Other Retailers
               </Text>
               <View className="gap-3">
@@ -438,10 +459,11 @@ export default function ProductDetailScreen() {
                   <TouchableOpacity
                     key={`${priceOption.store}-${priceOption.price}`}
                     onPress={() => priceOption.url && Linking.openURL(priceOption.url)}
-                    className={`w-full flex-row items-center justify-between p-4 bg-[#111827] border ${settings.highContrast ? 'border-white/35' : 'border-white/5'} rounded-2xl`}
+                    style={{ backgroundColor: theme.bgCard, borderColor: settings.highContrast ? theme.borderStrong : theme.border }}
+                    className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
                   >
                     <View className="flex-row items-center gap-3 flex-1">
-                      <View className="w-10 h-10 rounded-full bg-white/5 items-center justify-center">
+                      <View style={{ backgroundColor: theme.bgCardAlt }} className="w-10 h-10 rounded-full items-center justify-center">
                         {priceOption.logo && (priceOption.logo.startsWith("http://") || priceOption.logo.startsWith("https://")) ? (
                           <Image
                             source={{ uri: priceOption.logo }}
@@ -453,22 +475,18 @@ export default function ProductDetailScreen() {
                         )}
                       </View>
                       <View className="flex-1">
-                        <Text style={{ fontSize: 14 * fontScale }} className="text-white font-bold" numberOfLines={1}>
+                        <Text style={{ fontSize: 14 * fontScale, color: theme.text }} className="font-bold" numberOfLines={1}>
                           {priceOption.store || priceOption.retailer}
                         </Text>
                         <Text
-                          style={{ fontSize: 12 * fontScale }}
-                          className={`mt-0.5 font-medium ${
-                            priceOption.stock === "Out of Stock" || !priceOption.in_stock
-                              ? "text-red-400"
-                              : "text-white/40"
-                          }`}
+                          style={{ fontSize: 12 * fontScale, color: (priceOption.stock === "Out of Stock" || !priceOption.in_stock) ? "#EF4444" : theme.textMuted }}
+                          className="mt-0.5 font-medium"
                         >
                           {priceOption.stock || "In Stock"}
                         </Text>
                       </View>
                     </View>
-                    <Text style={{ fontSize: 16 * fontScale }} className="font-bold text-white ml-3">{formatCurrency(priceOption.price)}</Text>
+                    <Text style={{ fontSize: 16 * fontScale, color: theme.text }} className="font-bold ml-3">{formatCurrency(priceOption.price)}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -484,11 +502,11 @@ export default function ProductDetailScreen() {
                   { label: "Current", value: formatCurrency(currentHistoryPrice), color: "#3B82F6" },
                   { label: "Hist. High", value: formatCurrency(historicalHigh), color: "#EF4444" },
                 ].map(({ label, value, color }) => (
-                  <View key={label} className="flex-1 p-3 bg-white/5 border border-white/10 rounded-2xl items-center">
+                  <View key={label} style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="flex-1 p-3 border rounded-2xl items-center">
                     <Text className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: `${color}99` }}>
                       {label}
                     </Text>
-                    <Text className="text-white font-bold text-xs">{value}</Text>
+                    <Text style={{ color: theme.text }} className="font-bold text-xs">{value}</Text>
                   </View>
                 ))}
               </View>
@@ -498,27 +516,28 @@ export default function ProductDetailScreen() {
           {prediction && (
             <Animated.View
               entering={FadeInDown.delay(325).springify()}
-              className="bg-[#111827] border border-white/5 rounded-3xl p-5 mb-8"
+              style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+              className="border rounded-3xl p-5 mb-8"
             >
               <View className="flex-row items-center gap-2 mb-4">
                 <Sparkles size={16} color="#F4A261" />
-                <Text className="text-white font-bold text-sm">Price Prediction</Text>
+                <Text style={{ color: theme.text }} className="font-bold text-sm">Price Prediction</Text>
               </View>
               <View className="flex-row justify-between mb-3">
                 <View>
-                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">
+                  <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider">
                     Next {prediction.daysAhead} days
                   </Text>
-                  <Text className="text-white text-xl font-black mt-1">
+                  <Text style={{ color: theme.text }} className="text-xl font-black mt-1">
                     {formatCurrency(prediction.predictedPrice)}
                   </Text>
                 </View>
                 <View className="items-end">
-                  <Text className="text-white/40 text-[10px] font-bold uppercase tracking-wider">Signal</Text>
+                  <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase tracking-wider">Signal</Text>
                   <Text className="text-[#F4A261] font-black mt-1">{prediction.recommendation}</Text>
                 </View>
               </View>
-              <Text className="text-white/50 text-xs leading-5">
+              <Text style={{ color: theme.textMuted }} className="text-xs leading-5">
                 {prediction.trend} with {prediction.confidence}% confidence.
               </Text>
             </Animated.View>
@@ -526,7 +545,7 @@ export default function ProductDetailScreen() {
 
           {similarProducts.length > 0 && (
             <Animated.View entering={FadeInDown.delay(340).springify()} className="mb-8">
-              <Text className="text-white/60 font-bold text-xs uppercase tracking-wider mb-4 px-1">
+              <Text style={{ color: theme.textMuted }} className="font-bold text-xs uppercase tracking-wider mb-4 px-1">
                 Similar Products
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -536,19 +555,20 @@ export default function ProductDetailScreen() {
                     <TouchableOpacity
                       key={item.id}
                       onPress={() => router.push(`/product/${item.upc}` as any)}
-                      className="w-40 mr-3 bg-[#111827] border border-white/5 rounded-2xl overflow-hidden"
+                      style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                      className="w-40 mr-3 border rounded-2xl overflow-hidden"
                     >
                       <Image source={{ uri: image }} className="w-full h-24" resizeMode="cover" />
                       <View className="p-3">
-                        <Text className="text-white/40 text-[10px] font-bold uppercase" numberOfLines={1}>
+                        <Text style={{ color: theme.textMuted }} className="text-[10px] font-bold uppercase" numberOfLines={1}>
                           {item.brand}
                         </Text>
-                        <Text className="text-white text-xs font-bold mt-1 leading-4" numberOfLines={2}>
+                        <Text style={{ color: theme.text }} className="text-xs font-bold mt-1 leading-4" numberOfLines={2}>
                           {item.name}
                         </Text>
                         <View className="flex-row items-center mt-2">
-                          <Text className="text-[#2ECC71] text-[11px] font-bold">View</Text>
-                          <ChevronRight size={12} color="#2ECC71" />
+                          <Text style={{ color: accent.hex }} className="text-[11px] font-bold">View</Text>
+                          <ChevronRight size={12} color={accent.hex} />
                         </View>
                       </View>
                     </TouchableOpacity>
@@ -561,13 +581,14 @@ export default function ProductDetailScreen() {
           {product.description && (
             <Animated.View
               entering={FadeInDown.delay(350).springify()}
-              className={`bg-[#111827] border ${settings.highContrast ? 'border-white/35' : 'border-white/5'} rounded-3xl p-6 mb-8`}
+              style={{ backgroundColor: theme.bgCard, borderColor: settings.highContrast ? theme.borderStrong : theme.border }}
+              className="border rounded-3xl p-6 mb-8"
             >
               <View className="flex-row items-center gap-2 mb-3">
-                <Info size={16} color="#4ADE80" />
-                <Text style={{ fontSize: 14 * fontScale }} className="text-white font-bold">About this item</Text>
+                <Info size={16} color={accent.hex} />
+                <Text style={{ fontSize: 14 * fontScale, color: theme.text }} className="font-bold">About this item</Text>
               </View>
-              <Text style={{ fontSize: 14 * fontScale }} className="text-white/60 leading-relaxed font-medium">{product.description}</Text>
+              <Text style={{ fontSize: 14 * fontScale, color: theme.textMuted }} className="leading-relaxed font-medium">{product.description}</Text>
             </Animated.View>
           )}
         </View>

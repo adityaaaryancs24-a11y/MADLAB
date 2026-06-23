@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 type Props = {
   categories: string[];
@@ -8,6 +9,8 @@ type Props = {
 };
 
 export default function CategoryFilters({ categories, active, onChange }: Props) {
+  const { theme, accent, isDark } = useAppTheme();
+
   return (
     <View className="pt-1 pb-1">
       <ScrollView
@@ -25,16 +28,18 @@ export default function CategoryFilters({ categories, active, onChange }: Props)
               className="px-4 py-2 rounded-xl"
               style={{
                 backgroundColor: isActive
-                  ? "#2ECC71"
-                  : "rgba(255,255,255,0.04)",
+                  ? accent.hex
+                  : theme.bgCard,
                 borderWidth: isActive ? 0 : 1,
-                borderColor: "rgba(255,255,255,0.06)",
+                borderColor: theme.border,
               }}
             >
               <Text
                 className="text-[13px] font-semibold"
                 style={{
-                  color: isActive ? "#0A0E15" : "rgba(255,255,255,0.45)",
+                  color: isActive
+                    ? (isDark ? "#0A0E15" : "#FFFFFF")
+                    : theme.textMuted,
                 }}
               >
                 {cat}

@@ -100,7 +100,7 @@ const speakText = (text: string) => {
 
 export default function Settings() {
   const insets = useSafeAreaInsets();
-  const { fontScale } = useAppTheme();
+  const { fontScale, theme, accent, isDark } = useAppTheme();
   const scaledText = (baseSize: number) => ({ fontSize: baseSize * fontScale });
 
   const {
@@ -180,12 +180,12 @@ export default function Settings() {
 
   // Haptic feedback trigger
   const triggerHaptic = async () => {
-    if (settings.hapticFeedback) {
-      try {
+    try {
+      if (settings.hapticFeedback && Haptics && Haptics.notificationAsync && Haptics.NotificationFeedbackType) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (e) {
-        console.log("Haptics failed", e);
       }
+    } catch (e) {
+      console.log("Haptics failed", e);
     }
   };
 
@@ -336,14 +336,14 @@ export default function Settings() {
   };
 
   const storeOptions = [
-    { key: "amazon", label: "Amazon India", logo: "https://logo.clearbit.com/amazon.in" },
-    { key: "flipkart", label: "Flipkart", logo: "https://logo.clearbit.com/flipkart.com" },
-    { key: "blinkit", label: "Blinkit", logo: "https://logo.clearbit.com/blinkit.com" },
-    { key: "bigbasket", label: "BigBasket", logo: "https://logo.clearbit.com/bigbasket.com" },
-    { key: "zepto", label: "Zepto", logo: "https://logo.clearbit.com/zeptonow.com" },
-    { key: "dmart", label: "DMart Ready", logo: "https://logo.clearbit.com/dmart.in" },
-    { key: "reliance", label: "Reliance Digital", logo: "https://logo.clearbit.com/reliancedigital.in" },
-    { key: "tatacliq", label: "Tata CLIQ", logo: "https://logo.clearbit.com/tatacliq.com" },
+    { key: "amazon", label: "Amazon India", logo: "https://www.google.com/s2/favicons?sz=128&domain=amazon.in" },
+    { key: "flipkart", label: "Flipkart", logo: "https://www.google.com/s2/favicons?sz=128&domain=flipkart.com" },
+    { key: "blinkit", label: "Blinkit", logo: "https://www.google.com/s2/favicons?sz=128&domain=blinkit.com" },
+    { key: "bigbasket", label: "BigBasket", logo: "https://www.bbassets.com/static/staticContent/bb_logo.png" },
+    { key: "zepto", label: "Zepto", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Zepto_Logo.svg/512px-Zepto_Logo.svg.png" },
+    { key: "dmart", label: "DMart Ready", logo: "https://www.google.com/s2/favicons?sz=128&domain=dmart.in" },
+    { key: "reliance", label: "Reliance Digital", logo: "https://www.google.com/s2/favicons?sz=128&domain=reliancedigital.in" },
+    { key: "tatacliq", label: "Tata CLIQ", logo: "https://www.google.com/s2/favicons?sz=128&domain=tatacliq.com" },
   ];
 
   // Gallery photo picker handler
@@ -368,7 +368,7 @@ export default function Settings() {
   };
 
   return (
-    <View style={{ paddingTop: insets.top }} className="flex-1 bg-[#0A0E15] text-white">
+    <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }} className="flex-1">
 
       {activePanel === null ? (
         /* ========================================================= */
@@ -376,118 +376,112 @@ export default function Settings() {
         /* ========================================================= */
         <View className="flex-1">
           {/* Header */}
-          <View className="flex-row items-center gap-4 px-6 py-5 border-b border-white/5 bg-[#0A0E15]/50">
-            <Text style={scaledText(20)} className="font-bold text-white">Settings</Text>
+          <View style={{ borderBottomColor: theme.border, backgroundColor: theme.bgCardAlt }} className="flex-row items-center gap-4 px-6 py-5 border-b">
+            <Text style={[scaledText(20), { color: theme.text }]} className="font-bold">Settings</Text>
           </View>
 
           <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }} className="flex-1">
             {/* Personalized Greeting Banner */}
-            <View className="p-5 bg-gradient-to-r from-[#2ECC71]/10 to-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-3xl mb-6 relative overflow-hidden">
+            <View style={{ borderColor: accent.hex + "33", backgroundColor: accent.hex + "11" }} className="p-5 border rounded-3xl mb-6 relative overflow-hidden">
               <View className="absolute right-0 bottom-0 top-0 opacity-10 flex justify-center items-center mr-4">
-                <Sparkles size={80} color="#2ECC71" />
+                <Sparkles size={80} color={accent.hex} />
               </View>
-              <Text style={scaledText(11)} className="font-bold text-[#2ECC71] uppercase tracking-wider mb-1">Welcome Back</Text>
-              <Text style={scaledText(24)} className="font-black text-white">Hello, {currentUser.name}! 👋</Text>
-              <Text style={scaledText(11)} className="text-white/50 mt-1.5">Your settings are synchronized and personalized to your account.</Text>
+              <Text style={[scaledText(11), { color: accent.hex }]} className="font-bold uppercase tracking-wider mb-1">Welcome Back</Text>
+              <Text style={[scaledText(24), { color: theme.text }]} className="font-black">Hello, {currentUser.name}! 👋</Text>
+              <Text style={[scaledText(11), { color: theme.textMuted }]} className="mt-1.5">Your settings are synchronized and personalized to your account.</Text>
             </View>
 
-            {/* User Profile Card */}
+            {/* Merged Profile & Account Card */}
             <TouchableOpacity
               onPress={() => setActivePanel("profile")}
-              className="p-5 bg-white/5 border border-white/10 rounded-3xl flex-row items-center gap-4 mb-6"
+              style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+              className="p-5 border rounded-3xl flex-row items-center gap-4 mb-6"
             >
               <View className="relative">
                 <Image
                   source={{ uri: selectedAvatar }}
-                  className="w-16 h-16 rounded-2xl border border-white/10"
+                  style={{ borderColor: theme.border }}
+                  className="w-16 h-16 rounded-2xl border"
                 />
               </View>
 
               <View className="flex-1">
-                <Text style={scaledText(18)} className="font-bold text-white">{currentUser.name}</Text>
-                <Text style={scaledText(14)} className="text-white/60 truncate">{currentUser.email}</Text>
+                <Text style={[scaledText(18), { color: theme.text }]} className="font-bold">Profile & Account</Text>
+                <Text style={[scaledText(13), { color: theme.textMuted }]} className="truncate">{currentUser.name} • {currentUser.email}</Text>
               </View>
-              <ChevronRight size={20} color="#9CA3AF" />
+              <ChevronRight size={20} color={theme.textMuted} />
             </TouchableOpacity>
 
             {/* Navigation Lists */}
             <View className="space-y-3 gap-3 mb-6">
-              {/* 1. Profile & Account */}
-              <TouchableOpacity
-                onPress={() => setActivePanel("profile")}
-                className="w-full flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl"
-              >
-                <View className="flex-row items-center gap-4">
-                  <View className="w-10 h-10 rounded-xl bg-[#2ECC71]/20 items-center justify-center">
-                    <UserIcon size={20} color="#2ECC71" />
-                  </View>
-                  <Text style={scaledText(14)} className="font-semibold text-white">Profile & Account</Text>
-                </View>
-                <ChevronRight size={20} color="#9CA3AF" />
-              </TouchableOpacity>
 
               {/* 2. Notifications & Alerts */}
               <TouchableOpacity
                 onPress={() => setActivePanel("notifications")}
-                className="w-full flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
               >
                 <View className="flex-row items-center gap-4">
-                  <View className="w-10 h-10 rounded-xl bg-[#F4A261]/20 items-center justify-center">
+                  <View style={{ backgroundColor: isDark ? "rgba(244,162,97,0.2)" : "rgba(244,162,97,0.1)" }} className="w-10 h-10 rounded-xl items-center justify-center">
                     <Bell size={20} color="#F4A261" />
                   </View>
-                  <Text style={scaledText(14)} className="font-semibold text-white">Notifications & Alerts</Text>
+                  <Text style={[scaledText(14), { color: theme.text }]} className="font-semibold">Notifications & Alerts</Text>
                 </View>
-                <ChevronRight size={20} color="#9CA3AF" />
+                <ChevronRight size={20} color={theme.textMuted} />
               </TouchableOpacity>
 
               {/* 3. Appearance & Accent */}
               <TouchableOpacity
                 onPress={() => setActivePanel("appearance")}
-                className="w-full flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
               >
                 <View className="flex-row items-center gap-4">
-                  <View className="w-10 h-10 rounded-xl bg-[#60A5FA]/20 items-center justify-center">
+                  <View style={{ backgroundColor: isDark ? "rgba(96,165,250,0.2)" : "rgba(96,165,250,0.1)" }} className="w-10 h-10 rounded-xl items-center justify-center">
                     <Palette size={20} color="#60A5FA" />
                   </View>
-                  <Text style={scaledText(14)} className="font-semibold text-white">Appearance & Accent</Text>
+                  <Text style={[scaledText(14), { color: theme.text }]} className="font-semibold">Appearance & Accent</Text>
                 </View>
-                <ChevronRight size={20} color="#9CA3AF" />
+                <ChevronRight size={20} color={theme.textMuted} />
               </TouchableOpacity>
 
               {/* 4. Data & Storage */}
               <TouchableOpacity
                 onPress={() => setActivePanel("data")}
-                className="w-full flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
               >
                 <View className="flex-row items-center gap-4">
-                  <View className="w-10 h-10 rounded-xl bg-[#A78BFA]/20 items-center justify-center">
+                  <View style={{ backgroundColor: isDark ? "rgba(167,139,250,0.2)" : "rgba(167,139,250,0.1)" }} className="w-10 h-10 rounded-xl items-center justify-center">
                     <Database size={20} color="#A78BFA" />
                   </View>
-                  <Text style={scaledText(14)} className="font-semibold text-white">Data & Storage</Text>
+                  <Text style={[scaledText(14), { color: theme.text }]} className="font-semibold">Data & Storage</Text>
                 </View>
-                <ChevronRight size={20} color="#9CA3AF" />
+                <ChevronRight size={20} color={theme.textMuted} />
               </TouchableOpacity>
 
               {/* 5. Accessibility */}
               <TouchableOpacity
                 onPress={() => setActivePanel("accessibility")}
-                className="w-full flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl"
+                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+                className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
               >
                 <View className="flex-row items-center gap-4">
-                  <View className="w-10 h-10 rounded-xl bg-[#25A65A]/20 items-center justify-center">
-                    <AccessIcon size={20} color="#2ECC71" />
+                  <View style={{ backgroundColor: isDark ? "rgba(46,204,113,0.2)" : "rgba(46,204,113,0.1)" }} className="w-10 h-10 rounded-xl items-center justify-center">
+                    <AccessIcon size={20} color={accent.hex} />
                   </View>
-                  <Text style={scaledText(14)} className="font-semibold text-white">Accessibility</Text>
+                  <Text style={[scaledText(14), { color: theme.text }]} className="font-semibold">Accessibility</Text>
                 </View>
-                <ChevronRight size={20} color="#9CA3AF" />
+                <ChevronRight size={20} color={theme.textMuted} />
               </TouchableOpacity>
             </View>
 
             {/* Logout actions */}
-            <View className="pt-4 border-t border-white/5 mb-6">
+            <View style={{ borderTopColor: theme.border }} className="pt-4 border-t mb-6">
               <TouchableOpacity
                 onPress={handleLogoutAction}
-                className="w-full flex-row items-center justify-between p-4 bg-red-500/5 border border-red-500/20 rounded-2xl"
+                style={{ borderColor: "rgba(239, 68, 68, 0.2)", backgroundColor: "rgba(239, 68, 68, 0.05)" }}
+                className="w-full flex-row items-center justify-between p-4 border rounded-2xl"
               >
                 <View className="flex-row items-center gap-4">
                   <View className="w-10 h-10 rounded-xl bg-red-500/10 items-center justify-center">
@@ -502,13 +496,13 @@ export default function Settings() {
             {/* App Info Version */}
             <View className="items-center py-4">
               <View className="flex-row items-center gap-1.5 mb-1">
-                <View className="w-6 h-6 rounded bg-[#2ECC71] items-center justify-center">
-                  <Zap size={14} color="#0A0E15" fill="currentColor" />
+                <View style={{ backgroundColor: accent.hex }} className="w-6 h-6 rounded items-center justify-center">
+                  <Zap size={14} color={isDark ? "#0A0E15" : "#FFFFFF"} fill="currentColor" />
                 </View>
-                <Text style={scaledText(14)} className="font-bold text-white">Verity App</Text>
+                <Text style={[scaledText(14), { color: theme.text }]} className="font-bold">Verity App</Text>
               </View>
-              <Text style={scaledText(12)} className="text-white/40">Version 1.1.0 (Beta)</Text>
-              <Text style={scaledText(10)} className="text-white/30 mt-1">Local database usage: {storageSize} KB</Text>
+              <Text style={[scaledText(12), { color: theme.textMuted }]} className="opacity-80">Version 1.1.0 (Beta)</Text>
+              <Text style={[scaledText(10), { color: theme.textDim }]} className="mt-1">Local database usage: {storageSize} KB</Text>
             </View>
           </ScrollView>
         </View>
@@ -518,14 +512,15 @@ export default function Settings() {
         /* ========================================================= */
         <View className="flex-1">
           {/* Header */}
-          <View className="flex-row items-center gap-4 px-6 py-5 border-b border-white/5 bg-[#0A0E15]/50">
+          <View style={{ borderBottomColor: theme.border, backgroundColor: theme.bgCardAlt }} className="flex-row items-center gap-4 px-6 py-5 border-b">
             <TouchableOpacity
               onPress={() => setActivePanel(null)}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 items-center justify-center"
+              style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+              className="w-10 h-10 rounded-xl border items-center justify-center"
             >
-              <ArrowLeft size={20} color="#FFF" />
+              <ArrowLeft size={20} color={theme.text} />
             </TouchableOpacity>
-            <Text className="text-xl font-bold text-white capitalize">
+            <Text style={{ color: theme.text }} className="text-xl font-bold capitalize">
               {activePanel === "profile" ? "Profile & Account" :
                 activePanel === "notifications" ? "Notifications & Alerts" :
                   activePanel === "appearance" ? "Appearance & Accent" :
@@ -545,21 +540,22 @@ export default function Settings() {
                   /* ========================================== */
                   <View className="gap-6">
                     {/* Header Card with Large Avatar & Basic Info */}
-                    <View className="p-6 bg-white/5 border border-white/10 rounded-3xl items-center gap-4">
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-6 border rounded-3xl items-center gap-4">
                       <Image
                         source={{ uri: selectedAvatar }}
-                        className="w-24 h-24 rounded-3xl border border-[#2ECC71]"
+                        style={{ borderColor: accent.hex }}
+                        className="w-24 h-24 rounded-3xl border"
                       />
                       <View className="items-center">
-                        <Text style={scaledText(22)} className="font-black text-white text-center">
+                        <Text style={[scaledText(22), { color: theme.text }]} className="font-black text-center">
                           {currentUser.name}
                         </Text>
-                        <Text style={scaledText(14)} className="text-white/40 text-center mt-0.5">
+                        <Text style={[scaledText(14), { color: theme.textMuted }]} className="text-center mt-0.5">
                           {currentUser.email}
                         </Text>
-                        <View className="mt-3 px-3 py-1 bg-[#2ECC71]/15 border border-[#2ECC71]/35 rounded-full flex-row items-center gap-1.5">
-                          <Shield size={12} color="#2ECC71" />
-                          <Text style={scaledText(10)} className="text-[#2ECC71] font-extrabold uppercase tracking-widest">
+                        <View style={{ backgroundColor: accent.hexLight + "1f", borderColor: accent.hexLight + "3f" }} className="mt-3 px-3 py-1 border rounded-full flex-row items-center gap-1.5">
+                          <Shield size={12} color={accent.hex} />
+                          <Text style={[scaledText(10), { color: accent.hex }]} className="font-extrabold uppercase tracking-widest">
                             {currentUser.membershipTier || "Free"} Member
                           </Text>
                         </View>
@@ -567,77 +563,77 @@ export default function Settings() {
                     </View>
 
                     {/* Account Details Panel */}
-                    <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
-                      <Text style={scaledText(12)} className="font-bold text-white uppercase tracking-wider mb-1 text-white/50">
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
+                      <Text style={[scaledText(12), { color: theme.textMuted }]} className="font-bold uppercase tracking-wider mb-1">
                         Account Details
                       </Text>
                       
-                      <View className="flex-row justify-between items-center py-2.5 border-b border-white/5">
+                      <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2.5 border-b">
                         <View className="flex-row items-center gap-2.5">
-                          <UserIcon size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Account ID</Text>
+                          <UserIcon size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Account ID</Text>
                         </View>
-                        <Text style={scaledText(13)} className="text-white font-mono">{currentUser.id}</Text>
+                        <Text style={[scaledText(13), { color: theme.text }]} className="font-mono">{currentUser.id}</Text>
                       </View>
 
-                      <View className="flex-row justify-between items-center py-2.5 border-b border-white/5">
+                      <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2.5 border-b">
                         <View className="flex-row items-center gap-2.5">
-                          <Calendar size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Member Since</Text>
+                          <Calendar size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Member Since</Text>
                         </View>
-                        <Text style={scaledText(13)} className="text-white font-medium">June 2026</Text>
+                        <Text style={[scaledText(13), { color: theme.text }]} className="font-medium">June 2026</Text>
                       </View>
 
-                      <View className="flex-row justify-between items-center py-2.5 border-b border-white/5">
+                      <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2.5 border-b">
                         <View className="flex-row items-center gap-2.5">
-                          <IndianRupee size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Preferred Currency</Text>
+                          <IndianRupee size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Preferred Currency</Text>
                         </View>
-                        <Text style={scaledText(13)} className="text-white font-medium">INR (₹)</Text>
+                        <Text style={[scaledText(13), { color: theme.text }]} className="font-medium">INR (₹)</Text>
                       </View>
 
                       <View className="flex-row justify-between items-center py-2.5">
                         <View className="flex-row items-center gap-2.5">
-                          <Globe size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">App Language</Text>
+                          <Globe size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">App Language</Text>
                         </View>
-                        <Text style={scaledText(13)} className="text-white font-medium">English (IN)</Text>
+                        <Text style={[scaledText(13), { color: theme.text }]} className="font-medium">English (IN)</Text>
                       </View>
                     </View>
 
                     {/* Scan & App Statistics Panel */}
-                    <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
-                      <Text style={scaledText(12)} className="font-bold text-white uppercase tracking-wider mb-1 text-white/50">
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
+                      <Text style={[scaledText(12), { color: theme.textMuted }]} className="font-bold uppercase tracking-wider mb-1">
                         Activity Statistics
                       </Text>
 
-                      <View className="flex-row justify-between items-center py-2.5 border-b border-white/5">
+                      <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2.5 border-b">
                         <View className="flex-row items-center gap-2.5">
-                          <Activity size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Products Scanned</Text>
+                          <Activity size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Products Scanned</Text>
                         </View>
-                        <View className="bg-[#2ECC71]/10 px-2 py-0.5 rounded border border-[#2ECC71]/20">
-                          <Text style={scaledText(12)} className="text-[#2ECC71] font-bold">{scanHistory.length}</Text>
+                        <View style={{ backgroundColor: accent.hexLight + "1c", borderColor: accent.hexLight + "33" }} className="px-2 py-0.5 rounded border">
+                          <Text style={[scaledText(12), { color: accent.hex }]} className="font-bold">{scanHistory.length}</Text>
                         </View>
                       </View>
 
-                      <View className="flex-row justify-between items-center py-2.5 border-b border-white/5">
+                      <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2.5 border-b">
                         <View className="flex-row items-center gap-2.5">
-                          <Heart size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Wishlist Trackers</Text>
+                          <Heart size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Wishlist Trackers</Text>
                         </View>
-                        <View className="bg-[#2ECC71]/10 px-2 py-0.5 rounded border border-[#2ECC71]/20">
-                          <Text style={scaledText(12)} className="text-[#2ECC71] font-bold">{watchlist.length}</Text>
+                        <View style={{ backgroundColor: accent.hexLight + "1c", borderColor: accent.hexLight + "33" }} className="px-2 py-0.5 rounded border">
+                          <Text style={[scaledText(12), { color: accent.hex }]} className="font-bold">{watchlist.length}</Text>
                         </View>
                       </View>
 
                       <View className="flex-row justify-between items-center py-2.5">
                         <View className="flex-row items-center gap-2.5">
-                          <Bell size={16} color="rgba(255,255,255,0.4)" />
-                          <Text style={scaledText(13)} className="text-white/60">Active Price Alerts</Text>
+                          <Bell size={16} color={theme.textDim} />
+                          <Text style={[scaledText(13), { color: theme.textMuted }]} className="opacity-80">Active Price Alerts</Text>
                         </View>
-                        <View className="bg-[#2ECC71]/10 px-2 py-0.5 rounded border border-[#2ECC71]/20">
-                          <Text style={scaledText(12)} className="text-[#2ECC71] font-bold">
+                        <View style={{ backgroundColor: accent.hexLight + "1c", borderColor: accent.hexLight + "33" }} className="px-2 py-0.5 rounded border">
+                          <Text style={[scaledText(12), { color: accent.hex }]} className="font-bold">
                             {watchlist.filter(w => w.targetPrice !== undefined).length}
                           </Text>
                         </View>
@@ -647,10 +643,11 @@ export default function Settings() {
                     {/* Edit Profile Button */}
                     <TouchableOpacity
                       onPress={() => setIsEditingProfile(true)}
-                      className="w-full py-4 bg-[#2ECC71] items-center justify-center rounded-2xl flex-row gap-2 shadow-lg shadow-[#2ECC71]/20"
+                      style={{ backgroundColor: accent.hex }}
+                      className="w-full py-4 items-center justify-center rounded-2xl flex-row gap-2 shadow-lg"
                     >
-                      <Edit size={16} color="#0A0E15" />
-                      <Text style={scaledText(14)} className="text-[#0A0E15] font-black uppercase tracking-wide">
+                      <Edit size={16} color={isDark ? "#0A0E15" : "#FFFFFF"} />
+                      <Text style={[scaledText(14), { color: isDark ? "#0A0E15" : "#FFFFFF" }]} className="font-black uppercase tracking-wide">
                         Edit Profile Details
                       </Text>
                     </TouchableOpacity>
@@ -661,8 +658,8 @@ export default function Settings() {
                   /* ========================================== */
                   <View className="gap-6">
                     {/* Avatar Picker */}
-                    <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4 items-center">
-                      <Text style={scaledText(14)} className="font-semibold text-white/60">Select Profile Avatar</Text>
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4 items-center">
+                      <Text style={[scaledText(14), { color: theme.textMuted }]} className="font-semibold">Select Profile Avatar</Text>
                       <View className="flex-row gap-3 flex-wrap justify-center">
                         {AVATAR_OPTIONS.map((url, i) => (
                           <TouchableOpacity
@@ -670,11 +667,12 @@ export default function Settings() {
                             onPress={() => handleAvatarSelect(url)}
                             className={`w-14 h-14 rounded-2xl overflow-hidden border-2 relative ${selectedAvatar === url ? "border-[#2ECC71] scale-105" : "border-transparent opacity-60"
                               }`}
+                            style={{ borderColor: selectedAvatar === url ? accent.hex : "transparent" }}
                           >
                             <Image source={{ uri: url }} className="w-full h-full" />
                             {selectedAvatar === url && (
-                              <View className="absolute bottom-0 right-0 bg-[#2ECC71] w-4 h-4 items-center justify-center rounded-tl-lg">
-                                <Check size={10} color="#0A0E15" strokeWidth={3} />
+                              <View style={{ backgroundColor: accent.hex }} className="absolute bottom-0 right-0 w-4 h-4 items-center justify-center rounded-tl-lg">
+                                <Check size={10} color={isDark ? "#0A0E15" : "#FFFFFF"} strokeWidth={3} />
                               </View>
                             )}
                           </TouchableOpacity>
@@ -682,35 +680,36 @@ export default function Settings() {
                       </View>
                       <TouchableOpacity
                         onPress={handlePickFromGallery}
-                        className="w-full flex-row items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-2xl mt-1"
+                        style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                        className="w-full flex-row items-center justify-center gap-2 py-3 border rounded-2xl mt-1"
                       >
-                        <ImageIcon size={16} color="rgba(255,255,255,0.6)" />
-                        <Text style={scaledText(12)} className="text-white/60 text-xs font-semibold">Pick from Gallery</Text>
+                        <ImageIcon size={16} color={theme.textMuted} />
+                        <Text style={[scaledText(12), { color: theme.textMuted }]} className="text-xs font-semibold">Pick from Gallery</Text>
                       </TouchableOpacity>
                     </View>
 
                     {/* Profile Fields */}
-                    <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
                       <View>
-                        <Text style={scaledText(14)} className="font-semibold text-white/60 mb-2">Display Name</Text>
+                        <Text style={[scaledText(14), { color: theme.textMuted }]} className="font-semibold mb-2">Display Name</Text>
                         <TextInput
                           value={profileName}
                           onChangeText={setProfileName}
                           placeholder="Display Name"
-                          placeholderTextColor="rgba(255,255,255,0.3)"
-                          style={scaledText(14)}
-                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white"
+                          placeholderTextColor={theme.textDim}
+                          style={[scaledText(14), { color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }]}
+                          className="w-full px-4 py-3 border rounded-xl"
                         />
                       </View>
                       <View>
-                        <Text style={scaledText(14)} className="font-semibold text-white/60 mb-2">Email Address</Text>
+                        <Text style={[scaledText(14), { color: theme.textMuted }]} className="font-semibold mb-2">Email Address</Text>
                         <TextInput
                           value={profileEmail}
                           onChangeText={setProfileEmail}
                           placeholder="Email Address"
-                          placeholderTextColor="rgba(255,255,255,0.3)"
-                          style={scaledText(14)}
-                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white"
+                          placeholderTextColor={theme.textDim}
+                          style={[scaledText(14), { color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }]}
+                          className="w-full px-4 py-3 border rounded-xl"
                           keyboardType="email-address"
                           autoCapitalize="none"
                         />
@@ -718,34 +717,35 @@ export default function Settings() {
                     </View>
 
                     {/* Change Password Form */}
-                    <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
+                    <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
                       <View className="flex-row items-center gap-2">
-                        <KeyRound size={16} color="#2ECC71" />
-                        <Text style={scaledText(14)} className="font-bold text-white">Security & Password</Text>
+                        <KeyRound size={16} color={accent.hex} />
+                        <Text style={[scaledText(14), { color: theme.text }]} className="font-bold">Security & Password</Text>
                       </View>
                       <TextInput
                         placeholder="Current Password"
-                        placeholderTextColor="rgba(255,255,255,0.3)"
+                        placeholderTextColor={theme.textDim}
                         secureTextEntry
                         value={passwordForm.old}
                         onChangeText={(val) => setPasswordForm(prev => ({ ...prev, old: val }))}
-                        style={scaledText(12)}
-                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white"
+                        style={[scaledText(12), { color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }]}
+                        className="w-full px-4 py-2.5 border rounded-xl"
                       />
                       <TextInput
                         placeholder="New Password"
-                        placeholderTextColor="rgba(255,255,255,0.3)"
+                        placeholderTextColor={theme.textDim}
                         secureTextEntry
                         value={passwordForm.new}
                         onChangeText={(val) => setPasswordForm(prev => ({ ...prev, new: val }))}
-                        style={scaledText(12)}
-                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white"
+                        style={[scaledText(12), { color: theme.text, backgroundColor: theme.bgCardAlt, borderColor: theme.border }]}
+                        className="w-full px-4 py-2.5 border rounded-xl"
                       />
                       <TouchableOpacity
                         onPress={handlePasswordChange}
-                        className="w-full py-2.5 bg-white/5 border border-white/10 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                        className="w-full py-2.5 border items-center justify-center rounded-xl"
                       >
-                        <Text style={scaledText(12)} className="text-white font-semibold">Change Security Password</Text>
+                        <Text style={[scaledText(12), { color: theme.text }]} className="font-semibold">Change Security Password</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -753,35 +753,37 @@ export default function Settings() {
                     <View className="flex-row gap-3">
                       <TouchableOpacity
                         onPress={() => setIsEditingProfile(false)}
-                        className="flex-1 py-4 bg-white/5 border border-white/10 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                        className="flex-1 py-4 border items-center justify-center rounded-2xl"
                       >
-                        <Text style={scaledText(14)} className="text-white/60 font-bold">Cancel</Text>
+                        <Text style={[scaledText(14), { color: theme.textMuted }]} className="font-bold">Cancel</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => {
                           handleSaveProfile();
                           setIsEditingProfile(false);
                         }}
-                        className="flex-1 py-4 bg-[#2ECC71] items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: accent.hex }}
+                        className="flex-1 py-4 items-center justify-center rounded-2xl"
                       >
-                        <Text style={scaledText(14)} className="text-[#0A0E15] font-black uppercase tracking-wide">Save Changes</Text>
+                        <Text style={[scaledText(14), { color: isDark ? "#0A0E15" : "#FFFFFF" }]} className="font-black uppercase tracking-wide">Save Changes</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 )}
 
                 {/* Danger Zone */}
-                <View className="p-5 bg-red-500/5 border border-red-500/20 rounded-3xl gap-4">
+                <View style={{ backgroundColor: "rgba(239, 68, 68, 0.05)", borderColor: "rgba(239, 68, 68, 0.2)" }} className="p-5 border rounded-3xl gap-4">
                   <View className="flex-row items-center gap-2">
                     <AlertTriangle size={18} color="#EF4444" />
-                    <Text style={scaledText(14)} className="font-bold text-red-500">Danger Zone</Text>
+                    <Text style={[scaledText(14), { color: "#EF4444" }]} className="font-bold">Danger Zone</Text>
                   </View>
-                  <Text style={scaledText(12)} className="text-white/60 leading-5">Permanently delete your user profile and scanned database history from AsyncStorage.</Text>
+                  <Text style={[scaledText(12), { color: theme.textMuted }]} className="leading-5">Permanently delete your user profile and scanned database history from AsyncStorage.</Text>
                   <TouchableOpacity
                     onPress={handleDeleteAccountAction}
                     className="w-full py-3 bg-red-500 items-center justify-center rounded-xl"
                   >
-                    <Text style={scaledText(12)} className="text-white font-bold">Delete Account Permanently</Text>
+                    <Text style={[scaledText(12), { color: "#FFFFFF" }]} className="font-bold">Delete Account Permanently</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -792,83 +794,96 @@ export default function Settings() {
             {/* ========================================== */}
             {activePanel === "notifications" && (
               <View className="gap-4">
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Push Notifications</Text>
-                    <Text className="text-xs text-white/50">Receive real-time alerts on device</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Push Notifications</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Receive real-time alerts on device</Text>
                   </View>
                   <Switch
                     value={settings.pushNotifications}
                     onValueChange={(val) => handleToggleSetting("pushNotifications", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Email Reports</Text>
-                    <Text className="text-xs text-white/50">Receive updates at {user?.email}</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Email Reports</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Receive updates at {user?.email}</Text>
                   </View>
                   <Switch
                     value={settings.emailNotifications}
                     onValueChange={(val) => handleToggleSetting("emailNotifications", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Price Drop Alerts</Text>
-                    <Text className="text-xs text-white/50">Auto-notify on watchlist drops</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Price Drop Alerts</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Auto-notify on watchlist drops</Text>
                   </View>
                   <Switch
                     value={settings.priceAlerts}
                     onValueChange={(val) => handleToggleSetting("priceAlerts", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
                 {/* Threshold slider options */}
                 {settings.priceAlerts && (
-                  <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-3">
-                    <Text className="text-xs font-bold text-[#2ECC71] flex-row items-center gap-1.5">
-                      <TrendingDown size={14} color="#2ECC71" /> Alert Reduction Threshold: {settings.priceAlertThreshold}%
+                  <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-3">
+                    <Text style={{ color: accent.hex }} className="text-xs font-bold flex-row items-center gap-1.5">
+                      <TrendingDown size={14} color={accent.hex} /> Alert Reduction Threshold: {settings.priceAlertThreshold}%
                     </Text>
-                    <Text className="text-xs text-white/60">You will only be alerted for price drops greater than or equal to this percent.</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">You will only be alerted for price drops greater than or equal to this percent.</Text>
                     <View className="flex-row gap-2 mt-2">
                       {[5, 10, 20, 30].map((val) => (
                         <TouchableOpacity
                           key={val}
                           onPress={() => handleToggleSetting("priceAlertThreshold", val)}
-                          className={`flex-1 py-2 items-center justify-center rounded-lg border ${settings.priceAlertThreshold === val
-                              ? "bg-[#2ECC71] border-[#2ECC71]"
-                              : "bg-white/5 border-white/10"
-                            }`}
+                          style={{
+                            backgroundColor: settings.priceAlertThreshold === val
+                              ? accent.hex
+                              : theme.bgCardAlt,
+                            borderColor: settings.priceAlertThreshold === val
+                              ? accent.hex
+                              : theme.border
+                          }}
+                          className="flex-1 py-2 items-center justify-center rounded-lg border"
                         >
-                          <Text className={`text-xs font-bold ${settings.priceAlertThreshold === val ? "text-[#0A0E15]" : "text-white"
-                            }`}>{val}%</Text>
+                          <Text
+                            style={{
+                              color: settings.priceAlertThreshold === val
+                                ? (isDark ? "#0A0E15" : "#FFFFFF")
+                                : theme.textMuted
+                            }}
+                            className="text-xs font-bold"
+                          >
+                            {val}%
+                          </Text>
                         </TouchableOpacity>
                       ))}
                     </View>
                   </View>
                 )}
 
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Weekly Scans Digest</Text>
-                    <Text className="text-xs text-white/50">Summary email of stores analysis</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Weekly Scans Digest</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Summary email of stores analysis</Text>
                   </View>
                   <Switch
                     value={settings.weeklyDigest}
                     onValueChange={(val) => handleToggleSetting("weeklyDigest", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
                 {/* Alert Sounds list */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-3">
-                  <Text className="text-sm font-semibold text-white flex-row items-center gap-2">
-                    <Volume2 size={20} color="#2ECC71" /> Alert Sound Options
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-3">
+                  <Text style={{ color: theme.text }} className="text-sm font-semibold flex-row items-center gap-2">
+                    <Volume2 size={20} color={accent.hex} /> Alert Sound Options
                   </Text>
                   <View className="gap-2">
                     {[
@@ -879,14 +894,27 @@ export default function Settings() {
                       <TouchableOpacity
                         key={snd.key}
                         onPress={() => handleAlertSoundChange(snd.key as any)}
-                        className={`flex-row items-center justify-between p-3 rounded-xl border ${settings.alertSound === snd.key
-                            ? "bg-[#2ECC71]/10 border-[#2ECC71]"
-                            : "bg-white/5 border-white/10"
-                          }`}
+                        style={{
+                          backgroundColor: settings.alertSound === snd.key
+                            ? accent.hexLight + "1c"
+                            : theme.bgCardAlt,
+                          borderColor: settings.alertSound === snd.key
+                            ? accent.hex
+                            : theme.border
+                        }}
+                        className="flex-row items-center justify-between p-3 rounded-xl border"
                       >
-                        <Text className={`text-xs ${settings.alertSound === snd.key ? "text-[#2ECC71] font-bold" : "text-white"
-                          }`}>{snd.label}</Text>
-                        {settings.alertSound === snd.key && <Check size={14} color="#2ECC71" />}
+                        <Text
+                          style={{
+                            color: settings.alertSound === snd.key
+                              ? accent.hex
+                              : theme.text
+                          }}
+                          className="text-xs font-semibold"
+                        >
+                          {snd.label}
+                        </Text>
+                        {settings.alertSound === snd.key && <Check size={14} color={accent.hex} />}
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -900,69 +928,42 @@ export default function Settings() {
             {activePanel === "appearance" && (
               <View className="gap-6">
                 {/* Theme Selector */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
-                  <Text className="text-sm font-semibold text-white flex-row items-center gap-2">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
+                  <Text style={{ color: theme.text }} className="text-sm font-semibold flex-row items-center gap-2">
                     <Sun size={20} color="#F59E0B" /> Interface Theme Mode
                   </Text>
-                  <View className="flex-row bg-white/5 p-1 rounded-xl border border-white/10">
+                  <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="flex-row p-1 rounded-xl border">
                     {[
                       { key: "light", label: "Light" },
-                      { key: "dark", label: "Dark" },
-                      { key: "system", label: "System" }
+                      { key: "dark", label: "Dark" }
                     ].map((mode) => {
                       const active = settings.themeMode === mode.key;
                       return (
                         <TouchableOpacity
                           key={mode.key}
                           onPress={() => handleToggleSetting("themeMode", mode.key)}
-                          className={`flex-1 py-2.5 rounded-lg items-center justify-center ${active ? "bg-white/10 text-[#2ECC71]" : ""
-                            }`}
+                          style={{ backgroundColor: active ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)") : "transparent" }}
+                          className="flex-1 py-2.5 rounded-lg items-center justify-center"
                         >
-                          <Text className={`text-xs font-bold ${active ? "text-[#2ECC71]" : "text-white/60"}`}>{mode.label}</Text>
+                          <Text style={{ color: active ? accent.hex : theme.textMuted }} className="text-xs font-bold">{mode.label}</Text>
                         </TouchableOpacity>
                       );
                     })}
                   </View>
                 </View>
 
-                {/* Accent Color picker */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
-                  <Text className="text-sm font-semibold text-white flex-row items-center gap-2">
-                    <Palette size={20} color="#2ECC71" /> Accent Highlights
-                  </Text>
-                  <View className="flex-row justify-around py-2">
-                    {[
-                      { key: "emerald", label: "Green", hex: "#2ECC71" },
-                      { key: "blue", label: "Blue", hex: "#3B82F6" },
-                      { key: "orange", label: "Orange", hex: "#F4A261" },
-                      { key: "purple", label: "Purple", hex: "#8B5CF6" }
-                    ].map((color) => (
-                      <TouchableOpacity
-                        key={color.key}
-                        onPress={() => handleToggleSetting("accentColor", color.key)}
-                        style={{ backgroundColor: color.hex }}
-                        className={`w-12 h-12 rounded-2xl items-center justify-center border-2 ${settings.accentColor === color.key ? "border-white scale-105" : "border-transparent opacity-75"
-                          }`}
-                      >
-                        {settings.accentColor === color.key && (
-                          <Check size={18} color="#0A0E15" strokeWidth={3} />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
                 {/* Preferred Stores Toggle */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
                   <View className="flex-row items-center gap-2">
-                    <Store size={20} color="#2ECC71" />
-                    <Text className="font-bold text-white text-sm">Indexed Stores</Text>
+                    <Store size={20} color={accent.hex} />
+                    <Text style={{ color: theme.text }} className="font-bold text-sm">Indexed Stores</Text>
                   </View>
                   <View className="gap-2">
                     {storeOptions.map((store) => (
                       <View
                         key={store.key}
-                        className="flex-row items-center justify-between p-3.5 bg-white/5 border border-white/10 rounded-xl"
+                        style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
+                        className="flex-row items-center justify-between p-3.5 border rounded-xl"
                       >
                         <View className="flex-row items-center gap-2.5">
                           <Image
@@ -970,12 +971,12 @@ export default function Settings() {
                             style={{ width: 28, height: 28, borderRadius: 6 }}
                             resizeMode="contain"
                           />
-                          <Text className="font-semibold text-white text-xs">{store.label}</Text>
+                          <Text style={{ color: theme.text }} className="font-semibold text-xs">{store.label}</Text>
                         </View>
                         <Switch
                           value={settings.preferredStores[store.key] ?? false}
                           onValueChange={() => handleToggleStore(store.key)}
-                          trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                          trackColor={{ false: theme.border, true: accent.hex }}
                         />
                       </View>
                     ))}
@@ -990,39 +991,39 @@ export default function Settings() {
             {activePanel === "data" && (
               <View className="gap-4">
                 {/* Storage Indicators */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-3">
-                  <Text className="text-sm font-semibold text-white flex-row items-center gap-2">
-                    <Database size={20} color="#2ECC71" /> Storage Metrics
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-3">
+                  <Text style={{ color: theme.text }} className="text-sm font-semibold flex-row items-center gap-2">
+                    <Database size={20} color={accent.hex} /> Storage Metrics
                   </Text>
-                  <View className="flex-row justify-between items-center py-2 border-b border-white/5">
-                    <Text className="text-xs text-white/60">AsyncStorage Footprint</Text>
-                    <Text className="text-sm font-bold text-white">{storageSize} KB</Text>
+                  <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2 border-b">
+                    <Text style={{ color: theme.textMuted }} className="text-xs">AsyncStorage Footprint</Text>
+                    <Text style={{ color: theme.text }} className="text-sm font-bold">{storageSize} KB</Text>
                   </View>
-                  <View className="flex-row justify-between items-center py-2 border-b border-white/5">
-                    <Text className="text-xs text-white/60">Scanned Products</Text>
-                    <Text className="text-sm font-bold text-white">{scanHistory.length}</Text>
+                  <View style={{ borderBottomColor: theme.border }} className="flex-row justify-between items-center py-2 border-b">
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Scanned Products</Text>
+                    <Text style={{ color: theme.text }} className="text-sm font-bold">{scanHistory.length}</Text>
                   </View>
                   <View className="flex-row justify-between items-center py-2">
-                    <Text className="text-xs text-white/60">Watchlist Trackers</Text>
-                    <Text className="text-sm font-bold text-white">{watchlist.length}</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Watchlist Trackers</Text>
+                    <Text style={{ color: theme.text }} className="text-sm font-bold">{watchlist.length}</Text>
                   </View>
                 </View>
 
                 {/* Offline Cache Mode */}
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Offline Cache Mode</Text>
-                    <Text className="text-xs text-white/50">Allow viewing product scans when offline</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Offline Cache Mode</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Allow viewing product scans when offline</Text>
                   </View>
                   <Switch
                     value={settings.offlineMode}
                     onValueChange={(val) => handleToggleSetting("offlineMode", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
                 {/* Wipes */}
-                <View className="p-5 bg-red-500/5 border border-red-500/20 rounded-3xl gap-3">
+                <View style={{ backgroundColor: "rgba(239, 68, 68, 0.05)", borderColor: "rgba(239, 68, 68, 0.2)" }} className="p-5 border rounded-3xl gap-3">
                   <Text className="text-xs font-bold text-red-500 flex-row items-center gap-1.5">
                     <Trash2 size={16} color="#EF4444" /> AsyncStorage Operations
                   </Text>
@@ -1030,11 +1031,15 @@ export default function Settings() {
                   <TouchableOpacity
                     onPress={handleClearSearchAction}
                     disabled={searchHistory.length === 0}
-                    style={{ opacity: searchHistory.length === 0 ? 0.4 : 1 }}
-                    className="w-full flex-row items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl"
+                    style={{
+                      opacity: searchHistory.length === 0 ? 0.4 : 1,
+                      backgroundColor: theme.bgCardAlt,
+                      borderColor: theme.border
+                    }}
+                    className="w-full flex-row items-center justify-between p-3 border rounded-xl"
                   >
-                    <Text className="text-white text-xs">Clear Search History</Text>
-                    <Text className="text-[10px] text-white/50 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                    <Text style={{ color: theme.text }} className="text-xs">Clear Search History</Text>
+                    <Text style={{ color: theme.textMuted, backgroundColor: theme.border }} className="text-[10px] font-mono px-1.5 py-0.5 rounded">
                       {searchHistory.length} items
                     </Text>
                   </TouchableOpacity>
@@ -1042,11 +1047,15 @@ export default function Settings() {
                   <TouchableOpacity
                     onPress={handleClearHistoryAction}
                     disabled={scanHistory.length === 0}
-                    style={{ opacity: scanHistory.length === 0 ? 0.4 : 1 }}
-                    className="w-full flex-row items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl"
+                    style={{
+                      opacity: scanHistory.length === 0 ? 0.4 : 1,
+                      backgroundColor: theme.bgCardAlt,
+                      borderColor: theme.border
+                    }}
+                    className="w-full flex-row items-center justify-between p-3 border rounded-xl"
                   >
-                    <Text className="text-white text-xs">Wipe Scans History</Text>
-                    <Text className="text-[10px] text-white/50 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                    <Text style={{ color: theme.text }} className="text-xs">Wipe Scans History</Text>
+                    <Text style={{ color: theme.textMuted, backgroundColor: theme.border }} className="text-[10px] font-mono px-1.5 py-0.5 rounded">
                       {scanHistory.length} items
                     </Text>
                   </TouchableOpacity>
@@ -1054,11 +1063,15 @@ export default function Settings() {
                   <TouchableOpacity
                     onPress={handleClearWatchlistAction}
                     disabled={watchlist.length === 0}
-                    style={{ opacity: watchlist.length === 0 ? 0.4 : 1 }}
-                    className="w-full flex-row items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl"
+                    style={{
+                      opacity: watchlist.length === 0 ? 0.4 : 1,
+                      backgroundColor: theme.bgCardAlt,
+                      borderColor: theme.border
+                    }}
+                    className="w-full flex-row items-center justify-between p-3 border rounded-xl"
                   >
-                    <Text className="text-white text-xs">Empty Watchlist Database</Text>
-                    <Text className="text-[10px] text-white/50 font-mono bg-white/5 px-1.5 py-0.5 rounded">
+                    <Text style={{ color: theme.text }} className="text-xs">Empty Watchlist Database</Text>
+                    <Text style={{ color: theme.textMuted, backgroundColor: theme.border }} className="text-[10px] font-mono px-1.5 py-0.5 rounded">
                       {watchlist.length} items
                     </Text>
                   </TouchableOpacity>
@@ -1072,11 +1085,11 @@ export default function Settings() {
             {activePanel === "accessibility" && (
               <View className="gap-4">
                 {/* Font Scaling controls */}
-                <View className="p-5 bg-white/5 border border-white/10 rounded-3xl gap-4">
-                  <Text className="text-sm font-semibold text-white flex-row items-center gap-2">
-                    <AccessIcon size={20} color="#2ECC71" /> Font Scale Adjust
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-5 border rounded-3xl gap-4">
+                  <Text style={{ color: theme.text }} className="text-sm font-semibold flex-row items-center gap-2">
+                    <AccessIcon size={20} color={accent.hex} /> Font Scale Adjust
                   </Text>
-                  <View className="flex-row bg-white/5 p-1 rounded-xl border border-white/10">
+                  <View style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }} className="flex-row p-1 rounded-xl border">
                     {[
                       { key: "small", label: "Small" },
                       { key: "medium", label: "Medium" },
@@ -1087,10 +1100,12 @@ export default function Settings() {
                         <TouchableOpacity
                           key={size.key}
                           onPress={() => handleToggleSetting("fontSize", size.key)}
-                          className={`flex-1 py-2 rounded-lg items-center justify-center ${active ? "bg-white/10" : ""
-                            }`}
+                          style={{
+                            backgroundColor: active ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)") : "transparent"
+                          }}
+                          className="flex-1 py-2 rounded-lg items-center justify-center"
                         >
-                          <Text className={`text-xs font-bold ${active ? "text-[#2ECC71]" : "text-white/60"}`}>{size.label}</Text>
+                          <Text style={{ color: active ? accent.hex : theme.textMuted }} className="text-xs font-bold">{size.label}</Text>
                         </TouchableOpacity>
                       );
                     })}
@@ -1098,39 +1113,39 @@ export default function Settings() {
                 </View>
 
                 {/* Haptic touch */}
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">Haptic Feedback</Text>
-                    <Text className="text-xs text-white/50">Vibrate on successful barcode scans</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">Haptic Feedback</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Vibrate on successful barcode scans</Text>
                   </View>
                   <Switch
                     value={settings.hapticFeedback}
                     onValueChange={(val) => handleToggleSetting("hapticFeedback", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">High Contrast outlines</Text>
-                    <Text className="text-xs text-white/50">Increases outline border visibility</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">High Contrast outlines</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Increases outline border visibility</Text>
                   </View>
                   <Switch
                     value={settings.highContrast}
                     onValueChange={(val) => handleToggleSetting("highContrast", val)}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
 
-                <View className="p-4 bg-white/5 border border-white/10 rounded-2xl flex-row items-center justify-between">
+                <View style={{ backgroundColor: theme.bgCard, borderColor: theme.border }} className="p-4 border rounded-2xl flex-row items-center justify-between">
                   <View>
-                    <Text className="font-semibold text-white text-sm">TTS Reader Mode</Text>
-                    <Text className="text-xs text-white/50">Speak store scan prices aloud</Text>
+                    <Text style={{ color: theme.text }} className="font-semibold text-sm">TTS Reader Mode</Text>
+                    <Text style={{ color: theme.textMuted }} className="text-xs">Speak store scan prices aloud</Text>
                   </View>
                   <Switch
                     value={settings.ttsEnabled}
                     onValueChange={handleTtsToggle}
-                    trackColor={{ false: "#1F2937", true: "#2ECC71" }}
+                    trackColor={{ false: theme.border, true: accent.hex }}
                   />
                 </View>
               </View>
@@ -1153,29 +1168,31 @@ export default function Settings() {
         >
           <TouchableOpacity 
             activeOpacity={1} 
-            className="w-full bg-[#111827] border border-white/10 rounded-3xl p-6 shadow-2xl items-center"
+            style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
+            className="w-full border rounded-3xl p-6 shadow-2xl items-center"
           >
             {/* Header Icon */}
-            <View className={`w-16 h-16 rounded-full items-center justify-center mb-4 ${alertConfig.isError ? 'bg-red-500/10' : 'bg-[#2ECC71]/10'}`}>
+            <View style={{ backgroundColor: alertConfig.isError ? 'rgba(239,68,68,0.1)' : accent.hexLight + "1a" }} className="w-16 h-16 rounded-full items-center justify-center mb-4">
               {alertConfig.isError ? (
                 <AlertTriangle size={32} color="#EF4444" />
               ) : (
-                <Check size={32} color="#2ECC71" strokeWidth={3} />
+                <Check size={32} color={accent.hex} strokeWidth={3} />
               )}
             </View>
 
             {/* Title & Message */}
-            <Text className="text-white text-xl font-bold mb-2 text-center">{alertConfig.title}</Text>
-            <Text className="text-white/60 text-sm text-center mb-6 leading-5">
+            <Text style={{ color: theme.text }} className="text-xl font-bold mb-2 text-center">{alertConfig.title}</Text>
+            <Text style={{ color: theme.textMuted }} className="text-sm text-center mb-6 leading-5">
               {alertConfig.message}
             </Text>
 
             {/* Close Button */}
             <TouchableOpacity
               onPress={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
-              className={`w-full py-3.5 rounded-xl items-center justify-center ${alertConfig.isError ? 'bg-red-500' : 'bg-[#2ECC71]'}`}
+              style={{ backgroundColor: alertConfig.isError ? '#EF4444' : accent.hex }}
+              className="w-full py-3.5 rounded-xl items-center justify-center"
             >
-              <Text className={`${alertConfig.isError ? 'text-white' : 'text-[#0A0E15]'} font-bold text-sm`}>
+              <Text style={{ color: alertConfig.isError ? '#FFFFFF' : (isDark ? '#0A0E15' : '#FFFFFF') }} className="font-bold text-sm">
                 Continue
               </Text>
             </TouchableOpacity>

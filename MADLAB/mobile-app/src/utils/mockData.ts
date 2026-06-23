@@ -1,4 +1,5 @@
 import type { Product, PriceInfo, PriceHistoryPoint, PricePrediction, WatchlistItem } from "../types";
+import { findProductByUPC } from "../../data/products";
 
 // Deterministic Random Number Generator based on LCG
 class SeededRandom {
@@ -501,13 +502,16 @@ export function searchProducts(query: string): Product[] {
 export function getMockPrices(productId: string, category?: string, productName?: string): PriceInfo[] {
   const rng = new SeededRandom(getSeedFromId(productId));
 
-  const nameLower = (productName || mockProducts[productId]?.name || "").toLowerCase();
-  const catLower = (category || mockProducts[productId]?.category || "").toLowerCase();
+  const localProduct = findProductByUPC(productId);
+  const nameLower = (productName || localProduct?.name || mockProducts[productId]?.name || "").toLowerCase();
+  const catLower = (category || localProduct?.category || mockProducts[productId]?.category || "").toLowerCase();
   
-  const isGrocery = catLower.includes("grocery") || catLower.includes("food") || catLower.includes("beverage") || catLower.includes("snack") || productId.startsWith("off_") || nameLower.includes("kurkure") || nameLower.includes("salt") || nameLower.includes("noodles") || nameLower.includes("chips");
+  const isGrocery = catLower.includes("grocery") || catLower.includes("food") || catLower.includes("beverage") || catLower.includes("snack") || catLower.includes("household") || productId.startsWith("off_") || nameLower.includes("kurkure") || nameLower.includes("salt") || nameLower.includes("noodles") || nameLower.includes("chips") || nameLower.includes("detergent") || nameLower.includes("easy wash");
 
   let basePrice = rng.range(1200, 85000);
-  if (isGrocery) {
+  if (localProduct && localProduct.prices && localProduct.prices.length > 0) {
+    basePrice = Math.min(...localProduct.prices.map(p => p.price));
+  } else if (isGrocery) {
     basePrice = rng.range(10, 250);
     // Cheap items tuning
     if (nameLower.includes("salt") || nameLower.includes("pen") || nameLower.includes("biscuit") || nameLower.includes("noodle") || nameLower.includes("chips") || nameLower.includes("kurkure")) {
@@ -645,10 +649,14 @@ export function getBestDeals(limit: number = 5): Product[] {
     .map(item => item.product);
 }
 
-export function predictPrice(productId: string, daysAhead: number = 7): PricePrediction {
+export function predictPrice(productId: string, daysAhead: number = 7, basePrice?: number): PricePrediction {
   const prices = getMockPrices(productId);
-  const validPrices = prices.filter(p => p.price !== null).map(p => p.price as number);
-  const currentPrice = Math.min(...validPrices) || 1000;
+  const validPrices: number[] = prices.filter(p => p.price !== null).map(p => p.price as number);
+
+  let currentPrice = basePrice;
+  if (currentPrice === undefined || currentPrice <= 0) {
+    currentPrice = Math.min(...validPrices) || 1000;
+  }
 
   const rng = new SeededRandom(getSeedFromId(productId) + 456);
 

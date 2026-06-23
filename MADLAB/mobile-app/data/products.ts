@@ -2,7 +2,7 @@ export interface Product {
   upc: string;
   name: string;
   brand: string;
-  image: string;
+  image: any;
   description: string;
   category: string;
   prices: {
@@ -292,7 +292,7 @@ export const products: Product[] = [
     upc: "8901052002244",
     name: "Tata Salt Iodized 1kg",
     brand: "Tata",
-    image: require("../assets/images/tata_salt.png") as any,
+    image: require("../assets/images/tata_salt.png"),
     description: "Tata Salt is vacuum evaporated iodized salt. It contains the correct amount of iodine required for mental development and physical health.",
     category: "Grocery",
     prices: [
@@ -609,7 +609,7 @@ export const products: Product[] = [
     upc: "8901491100519",
     name: "Kurkure Masala Munch 90g",
     brand: "Kurkure",
-    image: "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=800&q=80",
+    image: require("../assets/images/kurkure.png"),
     description: "Kurkure is a crunchy, new-age Pack namkeen snack brand which symbolizes light-hearted fun. Made with trusted kitchen ingredients, 100% vegetarian.",
     category: "Grocery",
     prices: [
