@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+} from "react-native";
 import { router } from "expo-router";
 import { Zap, Sparkles, Shield } from "lucide-react-native";
 import { useAppTheme } from "../src/hooks/useAppTheme";
@@ -9,7 +15,7 @@ const slides = [
     title: "Meet Verity.",
     subtitle: "Scan the Barcode. See the Real Price.",
     icon: Zap,
-    description: "Your intelligent companion for shopping",
+    description: "Your intelligent companion for fearless shopping",
     color: "#2ECC71",
   },
   {
@@ -31,6 +37,7 @@ const slides = [
 export default function Onboarding() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { theme, accent, isDark } = useAppTheme();
+
   const CurrentIcon = slides[currentSlide].icon;
   const currentColor = slides[currentSlide].color;
 
@@ -38,89 +45,128 @@ export default function Onboarding() {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
-      router.replace("/(tabs)" as any);
+      router.replace("/(tabs)");
     }
   };
 
   const handleSkip = () => {
-    router.replace("/(tabs)" as any);
+    router.replace("/(tabs)");
   };
 
   return (
-    <SafeAreaView style={{ backgroundColor: theme.bg }} className="flex-1">
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: theme.bg }}
+    >
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+      />
+
       {/* Skip Button */}
-      <View className="flex-row justify-end px-6 pt-6 z-10">
+      <View className="flex-row justify-end px-6 pt-4">
         <TouchableOpacity
           onPress={handleSkip}
-          style={{ backgroundColor: theme.bgCardAlt, borderColor: theme.border }}
-          className="px-5 py-2 rounded-xl border"
+          className="px-4 py-2 rounded-xl border"
+          style={{
+            backgroundColor: theme.bgCardAlt,
+            borderColor: theme.border,
+          }}
         >
           <Text style={{ color: theme.textMuted }}>Skip</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Slides */}
-      <View className="flex-1 items-center justify-center px-8 z-10">
-        <View className="items-center text-center">
-          {/* Icon */}
-          <View className="mb-12 relative items-center justify-center">
-            <View
-              className="w-40 h-40 rounded-3xl items-center justify-center shadow-2xl"
-              style={{ backgroundColor: currentColor }}
-            >
-              <CurrentIcon size={80} color="#0A0E15" />
-            </View>
+      {/* Main Content */}
+      <View className="flex-1 justify-center items-center px-8">
+        {/* Icon */}
+        <View className="mb-10">
+          <View
+            className="w-32 h-32 rounded-3xl items-center justify-center"
+            style={{
+              backgroundColor: currentColor,
+            }}
+          >
+            <CurrentIcon size={64} color="#0A0E15" />
           </View>
-
-          {/* Title */}
-          <Text style={{ color: theme.text }} className="text-4xl font-bold mb-4">
-            {slides[currentSlide].title}
-          </Text>
-
-          {/* Subtitle */}
-          <Text style={{ color: theme.text }} className="text-xl mb-3 font-medium text-center opacity-85">
-            {slides[currentSlide].subtitle}
-          </Text>
-
-          {/* Description */}
-          <Text style={{ color: theme.textMuted }} className="text-base text-center">
-            {slides[currentSlide].description}
-          </Text>
         </View>
+
+        {/* Title */}
+        <Text
+          className="text-3xl font-bold text-center mb-4"
+          style={{ color: theme.text }}
+        >
+          {slides[currentSlide].title}
+        </Text>
+
+        {/* Subtitle */}
+        <Text
+          className="text-lg text-center font-medium mb-3 px-4"
+          style={{ color: theme.text }}
+        >
+          {slides[currentSlide].subtitle}
+        </Text>
+
+        {/* Description */}
+        <Text
+          className="text-base text-center px-8"
+          style={{ color: theme.textMuted }}
+        >
+          {slides[currentSlide].description}
+        </Text>
       </View>
 
       {/* Bottom Section */}
-      <View className="pb-12 px-8 z-10">
-        {/* Page Dots */}
-        <View className="flex-row justify-center gap-2 mb-8">
+      <View className="px-8 pb-10">
+        {/* Dots */}
+        <View className="flex-row justify-center mb-8">
           {slides.map((_, index) => (
             <TouchableOpacity
               key={index}
               onPress={() => setCurrentSlide(index)}
-              className="h-2 rounded-full"
               style={{
-                width: index === currentSlide ? 40 : 8,
-                backgroundColor: index === currentSlide ? currentColor : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"),
+                width: index === currentSlide ? 32 : 8,
+                height: 8,
+                borderRadius: 999,
+                marginHorizontal: 4,
+                backgroundColor:
+                  index === currentSlide
+                    ? currentColor
+                    : isDark
+                    ? "rgba(255,255,255,0.2)"
+                    : "rgba(0,0,0,0.15)",
               }}
             />
           ))}
         </View>
 
-        {/* Action Button */}
+        {/* Continue Button */}
         <TouchableOpacity
           onPress={handleNext}
-          className="w-full py-5 rounded-2xl items-center shadow-2xl"
+          className="w-full py-4 rounded-2xl items-center"
           style={{
-            backgroundColor: currentSlide === slides.length - 1 ? accent.hex : theme.bgCardAlt,
+            backgroundColor:
+              currentSlide === slides.length - 1
+                ? accent.hex
+                : theme.bgCardAlt,
             borderColor: theme.border,
-            borderWidth: currentSlide === slides.length - 1 ? 0 : 1
+            borderWidth:
+              currentSlide === slides.length - 1 ? 0 : 1,
           }}
         >
           <Text
             className="font-bold text-lg"
-            style={{ color: currentSlide === slides.length - 1 ? (isDark ? "#0A0E15" : "#FFFFFF") : theme.text }}
+            style={{
+              color:
+                currentSlide === slides.length - 1
+                  ? isDark
+                    ? "#0A0E15"
+                    : "#FFFFFF"
+                  : theme.text,
+            }}
           >
-            {currentSlide === slides.length - 1 ? "Get Started" : "Continue"}
+            {currentSlide === slides.length - 1
+              ? "Get Started"
+              : "Continue"}
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { router } from "expo-router";
 import {
   View,
   Text,
@@ -294,11 +295,19 @@ export default function Settings() {
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Log Out", style: "destructive", onPress: () => {
-            logout();
-            triggerHaptic();
-          }
-        }
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+              triggerHaptic();
+              
+              router.replace("/");
+            } catch (error) {
+              console.error("Logout failed:", error);
+            }
+          },
+        },
       ]
     );
   };

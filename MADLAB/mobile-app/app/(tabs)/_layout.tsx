@@ -11,11 +11,12 @@ export default function TabLayout() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("Auth state:", isAuthenticated);
+  
     if (!isAuthLoading && !isAuthenticated) {
       router.replace("/");
     }
   }, [isAuthenticated, isAuthLoading]);
-
   return (
     <Tabs
       screenOptions={{

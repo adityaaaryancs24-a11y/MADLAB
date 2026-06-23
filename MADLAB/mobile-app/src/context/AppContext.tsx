@@ -229,13 +229,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
-    setIsAuthenticated(false);
-    setScanHistory([]);
-    setWatchlist([]);
-    setSettings(defaultSettings);
-    await AsyncStorage.clear();
+    try {
+      await signOut(auth);
+  
+      setUser(null);
+      setIsAuthenticated(false);
+  
+      console.log("Logged out successfully");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const addToSearchHistory = (query: string, resultsCount: number) => {
