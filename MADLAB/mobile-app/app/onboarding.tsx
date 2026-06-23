@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Animated,
 } from "react-native";
 import { router } from "expo-router";
 import { Zap, Sparkles, Shield } from "lucide-react-native";
+import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
 import { useAppTheme } from "../src/hooks/useAppTheme";
 
 const slides = [
@@ -34,6 +36,85 @@ const slides = [
   },
 ];
 
+function AnimatedChartBackground() {
+  const pulseAnim = useRef(new Animated.Value(0.2)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.35,
+          duration: 3500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.2,
+          duration: 3500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [pulseAnim]);
+
+  return (
+    <Animated.View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: pulseAnim,
+        zIndex: 0,
+      }}
+      pointerEvents="none"
+    >
+      <Svg height="100%" width="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0%" stopColor="#2ECC71" stopOpacity="0.5" />
+            <Stop offset="100%" stopColor="#2ECC71" stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        <Path
+          d="M 0 100 L 0 65 Q 25 55, 45 75 T 85 45 T 100 30 L 100 100 Z"
+          fill="url(#grad)"
+        />
+        <Path
+          d="M 0 65 Q 25 55, 45 75 T 85 45 T 100 30"
+          fill="none"
+          stroke="#2ECC71"
+          strokeWidth="1.5"
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+function TypewriterText({ text, style, className }: { text: string; style?: any; className?: string }) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    setDisplayedText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(text.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 25);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <Text style={style} className={className}>
+      {displayedText}
+    </Text>
+  );
+}
+
 export default function Onboarding() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { theme, accent, isDark } = useAppTheme();
@@ -55,70 +136,79 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView
-      className="flex-1"
-      style={{ backgroundColor: theme.bg }}
+      style={{ flex: 1, backgroundColor: theme.bg }}
     >
       <StatusBar
         barStyle={isDark ? "light-content" : "dark-content"}
       />
 
+      {/* Pulsing glow background chart (approx 30% opacity) */}
+      <AnimatedChartBackground />
+
       {/* Skip Button */}
-      <View className="flex-row justify-end px-6 pt-4">
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: 24, paddingTop: 16, zIndex: 10 }}>
         <TouchableOpacity
           onPress={handleSkip}
-          className="px-4 py-2 rounded-xl border"
           style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 12,
+            borderWidth: 1,
             backgroundColor: theme.bgCardAlt,
             borderColor: theme.border,
           }}
         >
-          <Text style={{ color: theme.textMuted }}>Skip</Text>
+          <Text style={{ color: theme.textMuted, fontWeight: "600" }}>Skip</Text>
         </TouchableOpacity>
       </View>
 
       {/* Main Content */}
-      <View className="flex-1 justify-center items-center px-8">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 24, zIndex: 10 }}>
         {/* Icon */}
-        <View className="mb-10">
+        <View style={{ marginBottom: 40 }}>
           <View
-            className="w-32 h-32 rounded-3xl items-center justify-center"
             style={{
+              width: 120,
+              height: 120,
+              borderRadius: 24,
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: currentColor,
             }}
           >
-            <CurrentIcon size={64} color="#0A0E15" />
+            <CurrentIcon size={60} color="#0A0E15" />
           </View>
         </View>
 
         {/* Title */}
-        <Text
-          className="text-3xl font-bold text-center mb-4"
-          style={{ color: theme.text }}
-        >
-          {slides[currentSlide].title}
-        </Text>
+        <View style={{ minHeight: 48, justifyContent: "center", marginBottom: 12 }}>
+          <TypewriterText
+            text={slides[currentSlide].title}
+            style={{ color: theme.text, fontSize: 32, fontWeight: "bold", textAlign: "center" }}
+          />
+        </View>
 
         {/* Subtitle */}
-        <Text
-          className="text-lg text-center font-medium mb-3 px-4"
-          style={{ color: theme.text }}
-        >
-          {slides[currentSlide].subtitle}
-        </Text>
+        <View style={{ minHeight: 56, justifyContent: "center", marginBottom: 12 }}>
+          <TypewriterText
+            text={slides[currentSlide].subtitle}
+            style={{ color: theme.text, fontSize: 18, fontWeight: "600", textAlign: "center", paddingHorizontal: 16 }}
+          />
+        </View>
 
         {/* Description */}
-        <Text
-          className="text-base text-center px-8"
-          style={{ color: theme.textMuted }}
-        >
-          {slides[currentSlide].description}
-        </Text>
+        <View style={{ minHeight: 64, justifyContent: "center" }}>
+          <TypewriterText
+            text={slides[currentSlide].description}
+            style={{ color: theme.textMuted, fontSize: 15, textAlign: "center", paddingHorizontal: 24 }}
+          />
+        </View>
       </View>
 
       {/* Bottom Section */}
-      <View className="px-8 pb-10">
+      <View style={{ paddingHorizontal: 24, paddingBottom: 40, zIndex: 10 }}>
         {/* Dots */}
-        <View className="flex-row justify-center mb-8">
+        <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 32 }}>
           {slides.map((_, index) => (
             <TouchableOpacity
               key={index}
@@ -126,7 +216,7 @@ export default function Onboarding() {
               style={{
                 width: index === currentSlide ? 32 : 8,
                 height: 8,
-                borderRadius: 999,
+                borderRadius: 4,
                 marginHorizontal: 4,
                 backgroundColor:
                   index === currentSlide
@@ -142,8 +232,12 @@ export default function Onboarding() {
         {/* Continue Button */}
         <TouchableOpacity
           onPress={handleNext}
-          className="w-full py-4 rounded-2xl items-center"
           style={{
+            width: "100%",
+            paddingVertical: 16,
+            borderRadius: 16,
+            alignItems: "center",
+            justifyContent: "center",
             backgroundColor:
               currentSlide === slides.length - 1
                 ? accent.hex
@@ -154,7 +248,6 @@ export default function Onboarding() {
           }}
         >
           <Text
-            className="font-bold text-lg"
             style={{
               color:
                 currentSlide === slides.length - 1
@@ -162,6 +255,8 @@ export default function Onboarding() {
                     ? "#0A0E15"
                     : "#FFFFFF"
                   : theme.text,
+              fontWeight: "bold",
+              fontSize: 18,
             }}
           >
             {currentSlide === slides.length - 1

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Scan, BarChart3, TrendingDown, Zap, Sparkles, Shield } from "lucide-react";
+import { Zap, Sparkles, Shield } from "lucide-react";
 
 const slides = [
   {
@@ -30,6 +30,26 @@ const slides = [
   },
 ];
 
+function Typewriter({ text, speed = 30, className }: { text: string; speed?: number; className?: string }) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    setDisplayedText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(text.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return <span className={className}>{displayedText}</span>;
+}
+
 export function Onboarding() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
@@ -51,12 +71,22 @@ export function Onboarding() {
 
   return (
     <div className="h-screen w-full max-w-md mx-auto bg-gradient-to-b from-[#0A0E15] via-[#0F141D] to-[#0A0E15] flex flex-col relative overflow-hidden">
+      {/* Background Chart Video Playing at 30% Opacity */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none z-0"
+        src="https://assets.mixkit.co/videos/preview/mixkit-business-stock-market-growth-chart-on-a-screen-42352-large.mp4"
+      />
+
       {/* Animated Background Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
-            opacity: [0.15, 0.25, 0.15],
+            opacity: [0.1, 0.2, 0.1],
             x: [0, 50, 0],
             y: [0, -30, 0]
           }}
@@ -67,12 +97,12 @@ export function Onboarding() {
         <motion.div 
           animate={{ 
             scale: [1, 1.3, 1],
-            opacity: [0.1, 0.2, 0.1],
+            opacity: [0.08, 0.15, 0.08],
             x: [0, -50, 0],
             y: [0, 30, 0]
           }}
           transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          className="absolute bottom-20 right-1/4 w-96 h-96 bg-[#F4A261] opacity-10 blur-[120px] rounded-full"
+          className="absolute bottom-20 right-1/4 w-96 h-96 bg-[#F4A261] blur-[120px] rounded-full"
         ></motion.div>
       </div>
 
@@ -97,7 +127,7 @@ export function Onboarding() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="flex flex-col items-center text-center"
+            className="flex flex-col items-center text-center w-full"
           >
             {/* Icon with Glow Effect */}
             <motion.div
@@ -124,35 +154,20 @@ export function Onboarding() {
               </div>
             </motion.div>
 
-            {/* Title */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-4xl font-bold text-white mb-4"
-            >
-              {slides[currentSlide].title}
-            </motion.h1>
+            {/* Title - Typewriter Animation */}
+            <h1 className="text-4xl font-bold text-white mb-4 min-h-[44px]">
+              <Typewriter text={slides[currentSlide].title} speed={50} />
+            </h1>
 
-            {/* Subtitle */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-xl text-white/80 mb-3 font-medium"
-            >
-              {slides[currentSlide].subtitle}
-            </motion.p>
+            {/* Subtitle - Typewriter Animation */}
+            <p className="text-xl text-white/90 mb-3 font-semibold min-h-[28px]">
+              <Typewriter text={slides[currentSlide].subtitle} speed={40} />
+            </p>
 
-            {/* Description */}
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-base text-white/50"
-            >
-              {slides[currentSlide].description}
-            </motion.p>
+            {/* Description - Typewriter Animation */}
+            <p className="text-base text-white/60 min-h-[48px] max-w-xs">
+              <Typewriter text={slides[currentSlide].description} speed={30} />
+            </p>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -201,3 +216,4 @@ export function Onboarding() {
     </div>
   );
 }
+

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   onAuthStateChanged,
@@ -231,13 +232,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth);
-  
       setUser(null);
       setIsAuthenticated(false);
-  
       console.log("Logged out successfully");
+      router.replace("/");
     } catch (error) {
-      console.error(error);
+      console.error("Logout failed:", error);
     }
   };
 

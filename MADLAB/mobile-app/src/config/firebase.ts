@@ -1,7 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-// @ts-ignore
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlr6h2IytV6bf5isRwGxklSY40DvckOOM",
@@ -15,9 +13,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Auth with AsyncStorage persistence for React Native
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Use the SDK's default Auth instance. The installed Firebase wrapper does not
+// expose getReactNativePersistence from "firebase/auth", so initializeAuth()
+// would crash during module load in Expo Go.
+const auth = getAuth(app);
 
 export { app, auth };
