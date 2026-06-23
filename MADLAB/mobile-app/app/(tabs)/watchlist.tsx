@@ -139,9 +139,9 @@ export default function WatchlistScreen() {
     const productId = manualProduct.upc.trim() || `manual_${now}`;
     const store = manualProduct.store.trim() || 'Manual price';
     const priceDropPercent =
-      previousPrice > currentPrice
-        ? Number((((previousPrice - currentPrice) / previousPrice) * 100).toFixed(1))
-        : 0;
+  currentPrice < previousPrice
+    ? ((previousPrice - currentPrice) / previousPrice) * 100
+    : 0;
 
     addToWatchlist({
       id: `watch_manual_${now}`,

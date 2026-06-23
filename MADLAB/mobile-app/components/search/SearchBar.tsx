@@ -88,13 +88,16 @@ export default function SearchBar({
           placeholder="Search products, brands, UPC..."
           placeholderTextColor={theme.textDim}
           returnKeyType="search"
+          keyboardType="default"
           autoCorrect={false}
           autoCapitalize="none"
+          spellCheck={false}
           autoFocus={autoFocus}
           style={{ color: theme.text }}
           className="flex-1 text-[15px] py-0"
           clearButtonMode="never"
           selectionColor={accent.hex}
+          enablesReturnKeyAutomatically={true}
         />
 
         {/* Clear button */}

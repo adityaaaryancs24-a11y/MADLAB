@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ type Props = {
 export default function ProductCard({ product, index = 0, onPress }: Props) {
   const router = useRouter();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [imageError, setImageError] = useState(false);
   const { theme, accent } = useAppTheme();
 
   // Get prices to show best deal
@@ -86,11 +87,12 @@ export default function ProductCard({ product, index = 0, onPress }: Props) {
           style={{ backgroundColor: theme.bgCardAlt }}
           className="w-[60px] h-[60px] rounded-xl overflow-hidden items-center justify-center mr-4"
         >
-          {product.image ? (
+          {product.image && !imageError ? (
             <Image
               source={{ uri: product.image }}
               style={{ width: 60, height: 60 }}
-              resizeMode="cover"
+              resizeMode="contain"
+              onError={() => setImageError(true)}
             />
           ) : (
             <Text className="text-2xl">📦</Text>

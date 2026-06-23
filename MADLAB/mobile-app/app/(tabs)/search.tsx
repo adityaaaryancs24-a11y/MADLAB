@@ -142,8 +142,8 @@ export default function SearchScreen() {
         />
       </Animated.View>
 
-      {/* Category Filters (visible when typing or has results) */}
-      {(screenState === "results" || screenState === "no_results") && (
+      {/* Category Filters (visible whenever user is typing) */}
+      {screenState !== "idle" && (
         <CategoryFilters
           categories={CATEGORY_FILTERS}
           active={activeCategory}
@@ -151,33 +151,7 @@ export default function SearchScreen() {
         />
       )}
 
-      {query.trim().length > 0 && suggestions.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          className="z-10 px-5 pb-2"
-        >
-          {suggestions.map((suggestion) => (
-            <TouchableWithoutFeedback
-              key={suggestion}
-              onPress={() => {
-                handleRecentTap(suggestion);
-                Keyboard.dismiss();
-              }}
-            >
-              <View
-                style={{ backgroundColor: theme.bgCard, borderColor: theme.border }}
-                className="mr-2 px-3 py-2 rounded-xl border"
-              >
-                <Text style={{ color: theme.textMuted }} className="text-[11px] font-semibold" numberOfLines={1}>
-                  {suggestion}
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-          ))}
-        </ScrollView>
-      )}
+
 
       {/* Body */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

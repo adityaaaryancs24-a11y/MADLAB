@@ -25,6 +25,7 @@ export default function TrendingSearches({ searches, onTap }: Props) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
       >
         {searches.map((term, index) => (
